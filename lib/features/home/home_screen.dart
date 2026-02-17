@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'widgets/home_header.dart';
 import 'widgets/featured_section.dart';
-import 'widgets/upcoming_events_section.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -9,21 +7,16 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const HomeHeader(),
-
-            const SizedBox(height: 16),
-            const FeaturedSection(),
-
-            const SizedBox(height: 32),
-            const UpcomingEventsSection(),
-
-            const SizedBox(height: 32),
-          ],
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.black, title: const Text('Home')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: FeaturedSection(
+          title: 'Featured Mission',
+          subtitle: 'Join today and make impact',
+          onTap: () {
+            debugPrint('Featured section tapped');
+          },
         ),
       ),
     );

@@ -1,68 +1,45 @@
 import 'package:flutter/material.dart';
-import 'featured_card.dart';
 
 class FeaturedSection extends StatelessWidget {
-  const FeaturedSection({super.key});
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const FeaturedSection({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Featured",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              /// LEFT BIG CARD
-              Expanded(
-                child: FeaturedCard(
-                  title: "Sermons",
-                  subtitle: "Watch Here",
-                  imagePath: "assets/images/sermons.jpg",
-                  height: 260,
-                  bottomWidget: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: const Icon(Icons.play_arrow, color: Colors.black),
-                  ),
-                ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-
-              const SizedBox(width: 12),
-
-              /// RIGHT STACKED CARDS
-              Expanded(
-                child: Column(
-                  children: const [
-                    FeaturedCard(
-                      title: "Prayer Request",
-                      subtitle: "Let's Pray Together",
-                      imagePath: "assets/images/prayer.jpg",
-                      height: 124,
-                    ),
-                    SizedBox(height: 12),
-                    FeaturedCard(
-                      title: "Get Connected",
-                      subtitle: "Join Us",
-                      imagePath: "assets/images/community.jpg",
-                      height: 124,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }
