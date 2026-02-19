@@ -6,6 +6,7 @@ class FeaturedCard extends StatelessWidget {
   final String imagePath;
   final double height;
   final Widget? bottomWidget;
+  final VoidCallback? onTap;
 
   const FeaturedCard({
     super.key,
@@ -14,50 +15,57 @@ class FeaturedCard extends StatelessWidget {
     required this.imagePath,
     required this.height,
     this.bottomWidget,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
-      ),
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        height: height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withOpacity(0.15),
-              Colors.black.withOpacity(0.6),
-            ],
+          image: DecorationImage(
+            image: AssetImage(imagePath),
+            fit: BoxFit.cover,
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.15),
+                Colors.black.withOpacity(0.6),
+              ],
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            const Spacer(),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 14, color: Colors.white70),
-            ),
-            if (bottomWidget != null) ...[
-              const SizedBox(height: 8),
-              bottomWidget!,
+              const Spacer(),
+              Text(
+                subtitle,
+                style: const TextStyle(fontSize: 14, color: Colors.white70),
+              ),
+              if (bottomWidget != null) ...[
+                const SizedBox(height: 8),
+                bottomWidget!,
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
