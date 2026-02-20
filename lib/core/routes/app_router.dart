@@ -1,11 +1,21 @@
 import 'package:go_router/go_router.dart';
 import '../../features/home/home_shell.dart';
+import '../../features/sermons/sermons_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomeShell()),
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const HomeShell(),
+        routes: [
+          GoRoute(
+            path: 'sermons',
+            builder: (context, state) => const SermonsScreen(),
+          ),
+        ],
+      ),
     ],
   );
 }

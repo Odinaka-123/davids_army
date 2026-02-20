@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'core/routes/app_router.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const DavidsArmyApp());
 }
 
