@@ -1,82 +1,88 @@
 import 'package:flutter/material.dart';
-import 'package:davids_army/models/sermon.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../../../models/sermon.dart';
 
 class SermonsVideoCard extends StatelessWidget {
   final Sermon sermon;
 
   const SermonsVideoCard({super.key, required this.sermon});
 
-  Future<void> _openVideo() async {
-    final url = Uri.parse('https://www.youtube.com/watch?v=${sermon.videoId}');
-    await launchUrl(url, mode: LaunchMode.externalApplication);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _openVideo,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Stack(
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(sermon.thumbnail, fit: BoxFit.cover),
-            ),
-
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withValues(alpha: 0.7),
-                      Colors.transparent,
-                    ],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Stack(
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Image.network(sermon.thumbnail, fit: BoxFit.cover),
+          ),
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.65),
+                    Colors.transparent,
+                  ],
                 ),
               ),
             ),
-
-            const Center(
-              child: CircleAvatar(
-                radius: 28,
-                backgroundColor: Colors.white,
-                child: Icon(Icons.play_arrow, color: Colors.black, size: 32),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-
-            Positioned(
-              left: 14,
-              right: 14,
-              bottom: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: const Row(
                 children: [
+                  Icon(Icons.play_arrow, size: 14, color: Colors.white),
+                  SizedBox(width: 4),
                   Text(
-                    sermon.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    'YouTube',
+                    style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    sermon.date,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            left: 14,
+            right: 14,
+            bottom: 14,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sermon.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  sermon.date,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-//videoId: 'dQw4w9WgXcQ',
