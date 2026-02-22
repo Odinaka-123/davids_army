@@ -14,33 +14,24 @@ class HomeHeader extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // 👤 Profile avatar
             GestureDetector(
-              onTap: () {
-                // TODO: navigate to profile
-              },
+              onTap: () {},
               child: const CircleAvatar(
                 radius: 20,
                 backgroundColor: Color(0xFFF1F5F9),
                 child: Icon(Iconsax.user, color: Color(0xFF334155)),
               ),
             ),
-
-            // 🔔 Notifications
             Stack(
               children: [
                 IconButton(
-                  onPressed: () {
-                    // TODO: open notifications
-                  },
+                  onPressed: () {},
                   icon: const Icon(
                     Iconsax.notification,
                     size: 26,
                     color: Color(0xFF334155),
                   ),
                 ),
-
-                // 🔴 Red dot badge
                 Positioned(
                   right: 10,
                   top: 10,

@@ -35,8 +35,6 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
             ),
-
-            /// 🔍 Search
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: TextField(
@@ -56,8 +54,6 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 ),
               ),
             ),
-
-            /// Section title
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Align(
@@ -68,8 +64,6 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 ),
               ),
             ),
-
-            /// Sermons list
             Expanded(
               child: FutureBuilder<List<Sermon>>(
                 future: _futureSermons,
