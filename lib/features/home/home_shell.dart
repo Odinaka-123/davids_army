@@ -31,8 +31,6 @@ class HomeShell extends StatelessWidget {
 
     return Scaffold(
       body: child,
-
-      /// 🔽 Floating modern nav
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: ClipRRect(
