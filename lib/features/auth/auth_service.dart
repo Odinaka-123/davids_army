@@ -2,13 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-  final _auth = FirebaseAuth.instance;
-  final _google = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _google = GoogleSignIn();
 
-  /// Sign in with Google
+  /// SIGN IN WITH GOOGLE
   Future<User?> signInWithGoogle() async {
     final googleUser = await _google.signIn();
-    if (googleUser == null) return null;
+    if (googleUser == null) return null; // cancelled
 
     final googleAuth = await googleUser.authentication;
 
@@ -21,7 +21,7 @@ class AuthService {
     return userCred.user;
   }
 
-  /// Sign in with email & password
+  /// SIGN IN WITH EMAIL & PASSWORD
   Future<User?> signInEmail(String email, String password) async {
     final cred = await _auth.signInWithEmailAndPassword(
       email: email,
@@ -30,7 +30,7 @@ class AuthService {
     return cred.user;
   }
 
-  /// Sign up with email & password
+  /// SIGN UP WITH EMAIL & PASSWORD
   Future<User?> signUpEmail(String email, String password) async {
     final cred = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -39,9 +39,15 @@ class AuthService {
     return cred.user;
   }
 
-  /// Sign out
+  /// LOGOUT
   Future<void> signOut() async {
     await _auth.signOut();
     await _google.signOut();
   }
+
+  /// CHECK IF USER IS LOGGED IN (persistent)
+  bool get isLoggedIn => _auth.currentUser != null;
+
+  /// GET CURRENT USER
+  User? get currentUser => _auth.currentUser;
 }
