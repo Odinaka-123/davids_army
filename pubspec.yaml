@@ -17,12 +17,19 @@ dependencies:
   http: ^1.2.0
   url_launcher: ^6.2.5
   flutter_dotenv: ^6.0.0 
+  font_awesome_flutter: ^10.7.0
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  google_sign_in: ^6.2.1
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.13.1
+  
+  
 
 flutter:
   uses-material-design: true

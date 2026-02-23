@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "738210530186",
+    "project_id": "davids-army",
+    "storage_bucket": "davids-army.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:738210530186:android:f35480f7bd60c4d640fe73",
+        "android_client_info": {
+          "package_name": "com.davids.army"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwVTfVW34wEMPfYIyLwatPzvJkern4CVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:738210530186:android:76668af9acf3e1cd40fe73",
+        "android_client_info": {
+          "package_name": "com.example.davids_army"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwVTfVW34wEMPfYIyLwatPzvJkern4CVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
