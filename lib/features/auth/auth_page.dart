@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'auth_service.dart';
+import '../../features/auth/auth_service.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthPage extends StatefulWidget {
@@ -11,165 +11,286 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  bool isLogin = true;
-
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
   final auth = AuthService();
+
+  // Form controllers
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final emailController = TextEditingController();
+  final phoneController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
+  // Toggles
+  bool hidePassword = true;
+  bool hideConfirmPassword = true;
+  bool isLogin = true; // true = Login, false = Sign-Up
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                /// LOGO
-                Image.asset('assets/icons/shield_icon.png', height: 90),
-
-                const SizedBox(height: 24),
-
-                /// TITLE
-                Text(
-                  isLogin ? "Welcome Back" : "Create Account",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Removed BackButton
+              if (isLogin)
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Image.asset(
+                    'assets/icons/shield_icon.png',
+                    height: 36,
                   ),
                 ),
+              const SizedBox(height: 24),
 
-                const SizedBox(height: 8),
-
-                Text(
-                  isLogin ? "Sign in to continue" : "Join the community",
-                  style: const TextStyle(color: Colors.grey),
+              // Title
+              Text(
+                isLogin ? "Hi There! 👋" : "Register",
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isLogin
+                    ? "Welcome back, Sign in to your account"
+                    : "Create a new account",
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
 
-                const SizedBox(height: 32),
+              if (!isLogin) ...[
+                // First Name
+                TextField(
+                  controller: firstNameController,
+                  decoration: InputDecoration(
+                    hintText: "First Name",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-                /// GOOGLE BUTTON
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      try {
-                        final user = await auth.signInWithGoogle();
-                        if (user != null && mounted) {
-                          context.go('/'); // ✅ GoRouter navigation
-                        }
-                      } catch (e) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
+                // Last Name
+                TextField(
+                  controller: lastNameController,
+                  decoration: InputDecoration(
+                    hintText: "Last Name",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Phone
+                TextField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    hintText: "Phone Number",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Email
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  hintText: "Email",
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Password
+              TextField(
+                controller: passwordController,
+                obscureText: hidePassword,
+                decoration: InputDecoration(
+                  hintText: "Password",
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      hidePassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        hidePassword = !hidePassword;
+                      });
                     },
-                    icon: const FaIcon(FontAwesomeIcons.google, size: 18),
-                    label: const Text("Continue with Google"),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black87,
-                      side: const BorderSide(color: Color(0xFFE0E0E0)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              if (!isLogin)
+                // Confirm Password
+                TextField(
+                  controller: confirmPasswordController,
+                  obscureText: hideConfirmPassword,
+                  decoration: InputDecoration(
+                    hintText: "Confirm Password",
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        hideConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
+                      onPressed: () {
+                        setState(() {
+                          hideConfirmPassword = !hideConfirmPassword;
+                        });
+                      },
                     ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                /// DIVIDER
-                Row(
-                  children: const [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text("OR"),
-                    ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                /// EMAIL
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    hintText: "Email",
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 16),
-
-                /// PASSWORD
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: "Password",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+              if (isLogin)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      // TODO: forgot password logic
+                    },
+                    child: const Text("Forgot Password?"),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-                /// LOGIN / SIGNUP BUTTON
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: () async {
+              // Submit Button
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final email = emailController.text.trim();
+                    final pass = passwordController.text.trim();
+
+                    if (isLogin) {
                       try {
-                        if (isLogin) {
-                          await auth.signInEmail(
-                            emailController.text.trim(),
-                            passwordController.text.trim(),
-                          );
-                        } else {
-                          await auth.signUpEmail(
-                            emailController.text.trim(),
-                            passwordController.text.trim(),
-                          );
-                        }
-
-                        if (mounted) {
-                          context.go('/'); // ✅ GoRouter navigation
-                        }
+                        final user = await auth.signInEmail(email, pass);
+                        if (!mounted) return;
+                        if (user != null) context.go('/');
                       } catch (e) {
+                        if (!mounted) return;
                         ScaffoldMessenger.of(
                           context,
                         ).showSnackBar(SnackBar(content: Text(e.toString())));
                       }
-                    },
-                    child: Text(isLogin ? "Login" : "Sign Up"),
+                    } else {
+                      final confirm = confirmPasswordController.text.trim();
+
+                      if (pass != confirm) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Passwords do not match"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      try {
+                        final user = await auth.signUpEmail(
+                          email,
+                          pass,
+                        ); // only 2 args
+                        if (!mounted) return;
+                        if (user != null) context.go('/');
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
+                  child: Text(isLogin ? "Sign In" : "Sign Up"),
                 ),
+              ),
 
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
+              Row(
+                children: const [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Text("OR"),
+                  ),
+                  Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 16),
 
-                /// TOGGLE LOGIN/SIGNUP
-                TextButton(
+              // Social Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final user = await auth.signInWithGoogle();
+                        if (!mounted) return;
+                        if (user != null) context.go('/');
+                      },
+                      icon: const FaIcon(FontAwesomeIcons.google),
+                      label: const Text("Google"),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // TODO: Apple sign-in
+                      },
+                      icon: const Icon(Icons.apple),
+                      label: const Text("Apple"),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Toggle Login / Sign-Up
+              Center(
+                child: TextButton(
                   onPressed: () {
-                    setState(() => isLogin = !isLogin);
+                    setState(() {
+                      isLogin = !isLogin;
+                    });
                   },
                   child: Text(
                     isLogin
-                        ? "Don't have an account? Sign up"
+                        ? "Don't have an account? Sign Up"
                         : "Already have an account? Login",
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
