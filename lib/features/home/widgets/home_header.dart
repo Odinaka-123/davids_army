@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../settings/settings_page.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -14,14 +15,25 @@ class HomeHeader extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            // Settings Icon
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsPage()),
+                );
+              },
               child: const CircleAvatar(
                 radius: 20,
                 backgroundColor: Color(0xFFF1F5F9),
-                child: Icon(Iconsax.user, color: Color(0xFF334155)),
+                child: Icon(
+                  Iconsax.setting_2,
+                  color: Color(0xFF334155),
+                ), // settings icon
               ),
             ),
+
+            // Notification Icon
             Stack(
               children: [
                 IconButton(
