@@ -14,8 +14,6 @@ class SettingsPage extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Page title (no background, just spacing for notch/status bar)
-          // Page title with extra top spacing
           const SizedBox(height: 60),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
