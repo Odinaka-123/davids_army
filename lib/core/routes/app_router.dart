@@ -4,6 +4,8 @@ import '../../features/home/home_shell.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/sermons/sermons_screen.dart';
 import '../../features/auth/auth_service.dart';
+import '../../features/settings/profile_page.dart';
+import '../../features/settings/edit_profile_page.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -20,6 +22,14 @@ class AppRouter {
           GoRoute(
             path: '/sermons',
             builder: (context, state) => const SermonsScreen(),
+          ),
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfilePage(),
+          ),
+          GoRoute(
+            path: '/edit-profile',
+            builder: (context, state) => const EditProfilePage(),
           ),
         ],
       ),

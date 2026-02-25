@@ -39,7 +39,7 @@ class SettingsPage extends StatelessWidget {
                   icon: Icons.person,
                   title: 'Profile',
                   subtitle: 'Update your personal info',
-                  onTap: () {},
+                  onTap: () => context.push('/profile'),
                 ),
                 _buildSettingsTile(
                   icon: Icons.logout,
