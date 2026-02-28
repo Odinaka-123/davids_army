@@ -7,31 +7,25 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:738210530186:android:f35480f7bd60c4d640fe73",
-        "android_client_info": {
-          "package_name": "com.davids.army"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCwVTfVW34wEMPfYIyLwatPzvJkern4CVw"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:738210530186:android:76668af9acf3e1cd40fe73",
         "android_client_info": {
           "package_name": "com.example.davids_army"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "738210530186-10it799e0np029gskunat4fgoa2bhsv2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.davids_army",
+            "certificate_hash": "dfbaa43dc8bc960fa629a4bca2544986736db050"
+          }
+        },
+        {
+          "client_id": "738210530186-ksm452vavekasblskfsttr969nuemcc2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCwVTfVW34wEMPfYIyLwatPzvJkern4CVw"
@@ -39,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "738210530186-ksm452vavekasblskfsttr969nuemcc2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "738210530186-uvnjt5ncpm1s8hdiaj5qk9acaql2h9io.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.davidsArmy"
+              }
+            }
+          ]
         }
       }
     }
