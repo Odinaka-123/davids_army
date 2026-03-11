@@ -41,21 +41,24 @@ class HomeShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentIndex = _locationToIndex(context);
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return Scaffold(
+      backgroundColor: colors.background,
+      extendBody: true, // ⭐ allows body to extend under system nav bar
       body: child,
       bottomNavigationBar: Padding(
-        // Add bottom padding so bar floats above system navigation
         padding: EdgeInsets.fromLTRB(32, 0, 32, 16 + bottomPadding),
         child: Material(
           elevation: 12,
           borderRadius: BorderRadius.circular(40),
-          color: Colors.white,
+          color: Colors.transparent,
           child: Container(
             height: 70,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(40),
               boxShadow: const [
                 BoxShadow(
@@ -119,6 +122,7 @@ class HomeShell extends StatelessWidget {
     required BuildContext context,
   }) {
     final isSelected = index == currentIndex;
+    final colors = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: () => _onTap(context, index),
@@ -126,15 +130,15 @@ class HomeShell extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.green.shade50 : Colors.transparent,
+          color: isSelected
+              ? colors.primary.withOpacity(0.1)
+              : Colors.transparent,
           shape: BoxShape.circle,
         ),
         child: Icon(
           isSelected ? selectedIcon : icon,
           size: isSelected ? 32 : 28,
-          color: isSelected
-              ? const Color.fromARGB(255, 1, 65, 10)
-              : Colors.grey.shade600,
+          color: isSelected ? colors.primary : colors.onSurfaceVariant,
         ),
       ),
     );
