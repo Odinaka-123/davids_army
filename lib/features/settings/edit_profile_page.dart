@@ -1,204 +1,222 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
-class EditProfilePage extends StatelessWidget {
+class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
 
-  static const Color primaryColor = Color(0xFF01410A);
+  @override
+  State<EditProfilePage> createState() => _EditProfilePageState();
+}
+
+class _EditProfilePageState extends State<EditProfilePage> {
+  final firstName = TextEditingController();
+  final lastName = TextEditingController();
+  final phone = TextEditingController();
+  final city = TextEditingController();
+  final state = TextEditingController();
+  final country = TextEditingController();
+
+  final user = FirebaseAuth.instance.currentUser;
+  final picker = ImagePicker();
+
+  File? imageFile;
+  String? photoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  Future<void> loadUser() async {
+    final doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(user!.uid)
+        .get();
+
+    final data = doc.data()!;
+
+    firstName.text = data["firstName"] ?? "";
+    lastName.text = data["lastName"] ?? "";
+    phone.text = data["phone"] ?? "";
+    city.text = data["city"] ?? "";
+    state.text = data["state"] ?? "";
+    country.text = data["country"] ?? "";
+    photoUrl = data["photo"];
+
+    setState(() {});
+  }
+
+  Future<void> pickImage() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text("Take Photo"),
+                onTap: () async {
+                  Navigator.pop(context);
+
+                  final picked = await picker.pickImage(
+                    source: ImageSource.camera,
+                  );
+
+                  if (picked != null) {
+                    setState(() {
+                      imageFile = File(picked.path);
+                    });
+                  }
+                },
+              ),
+
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text("Upload from Gallery"),
+                onTap: () async {
+                  Navigator.pop(context);
+
+                  final picked = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+
+                  if (picked != null) {
+                    setState(() {
+                      imageFile = File(picked.path);
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// GET INITIALS
+  String getInitials() {
+    String f = firstName.text.isNotEmpty ? firstName.text[0] : "";
+    String l = lastName.text.isNotEmpty ? lastName.text[0] : "";
+    return (f + l).toUpperCase();
+  }
+
+  Future<void> saveProfile() async {
+    await FirebaseFirestore.instance.collection("users").doc(user!.uid).update({
+      "firstName": firstName.text,
+      "lastName": lastName.text,
+      "phone": phone.text,
+      "city": city.text,
+      "state": state.text,
+      "country": country.text,
+    });
+
+    context.pop();
+  }
+
+  /// AVATAR
+  Widget avatar() {
+    if (imageFile != null) {
+      return CircleAvatar(radius: 48, backgroundImage: FileImage(imageFile!));
+    }
+
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      return CircleAvatar(radius: 48, backgroundImage: NetworkImage(photoUrl!));
+    }
+
+    return CircleAvatar(
+      radius: 48,
+      backgroundColor: const Color(0xFFE8F5E9),
+      child: Text(
+        getInitials(),
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F7),
+      appBar: AppBar(title: const Text("Edit Profile")),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 60, 16, 24),
+        padding: const EdgeInsets.all(16),
         children: [
-          _topBar(context),
-          const SizedBox(height: 28),
+          /// AVATAR SECTION
+          Center(
+            child: Stack(
+              children: [
+                avatar(),
 
-          _avatarSection(),
-          const SizedBox(height: 28),
-
-          _sectionTitle('Personal info'),
-          _formCard([
-            _textField('First name', 'Ikenna'),
-            _textField('Last name', 'Ibeneme'),
-            _textField('Middle name', 'Benjamin'),
-          ]),
-
-          const SizedBox(height: 20),
-          _sectionTitle('Contact'),
-          _formCard([
-            _textField('Email', 'ibenemeikenna96@gmail.com'),
-            _textField('Phone', '08120710198'),
-          ]),
-
-          const SizedBox(height: 20),
-          _sectionTitle('Address'),
-          _formCard([
-            _textField('Street', 'No 12 Ada George Road'),
-            _textField('City', 'Port Harcourt'),
-            _textField('State', 'Rivers State'),
-            _textField('Country', 'Nigeria'),
-          ]),
-
-          const SizedBox(height: 28),
-          _saveButton(),
-        ],
-      ),
-    );
-  }
-
-  // TOP BAR
-  Widget _topBar(BuildContext context) {
-    return Row(
-      children: [
-        InkWell(
-          onTap: () => context.pop(),
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.arrow_back_ios_new, size: 18),
-          ),
-        ),
-        const SizedBox(width: 12),
-        const Text(
-          'Edit Profile',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  // AVATAR
-  Widget _avatarSection() {
-    return Center(
-      child: Stack(
-        children: [
-          const CircleAvatar(
-            radius: 48,
-            backgroundColor: Color(0xFFE8F5E9),
-            child: Icon(Icons.person, size: 48, color: Colors.black54),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: primaryColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: const Icon(
-                Icons.camera_alt,
-                size: 16,
-                color: Colors.white,
-              ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: pickImage,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF01410A),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
 
-  // SECTION TITLE
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        title.toUpperCase(),
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: Colors.black54,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
+          const SizedBox(height: 30),
 
-  // CARD
-  Widget _formCard(List<Widget> children) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 12,
-            offset: Offset(0, 6),
+          TextField(
+            controller: firstName,
+            decoration: const InputDecoration(labelText: "First name"),
           ),
-        ],
-      ),
-      child: Column(children: children),
-    );
-  }
 
-  // FIELD
-  Widget _textField(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: TextFormField(
-        initialValue: value,
-        style: const TextStyle(fontWeight: FontWeight.w600),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(fontSize: 13),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.black12),
+          TextField(
+            controller: lastName,
+            decoration: const InputDecoration(labelText: "Last name"),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.black12),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: primaryColor),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 14,
-          ),
-        ),
-      ),
-    );
-  }
 
-  // SAVE BUTTON
-  Widget _saveButton() {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: primaryColor.withOpacity(0.25)),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 4),
+          TextField(
+            controller: phone,
+            decoration: const InputDecoration(labelText: "Phone"),
+          ),
+
+          TextField(
+            controller: city,
+            decoration: const InputDecoration(labelText: "City"),
+          ),
+
+          TextField(
+            controller: state,
+            decoration: const InputDecoration(labelText: "State"),
+          ),
+
+          TextField(
+            controller: country,
+            decoration: const InputDecoration(labelText: "Country"),
+          ),
+
+          const SizedBox(height: 24),
+
+          ElevatedButton(
+            onPressed: saveProfile,
+            child: const Text("Save Changes"),
           ),
         ],
-      ),
-      child: const Center(
-        child: Text(
-          'Save changes',
-          style: TextStyle(
-            color: primaryColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
-          ),
-        ),
       ),
     );
   }
