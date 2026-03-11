@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../features/auth/auth_service.dart';
+import '../../core/theme_controller.dart';
 import 'package:go_router/go_router.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -28,12 +29,11 @@ class SettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Settings content
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                // Account Section
+                /// ACCOUNT
                 _buildSectionHeader('Account'),
                 _buildSettingsTile(
                   icon: Icons.person,
@@ -47,43 +47,87 @@ class SettingsPage extends StatelessWidget {
                   titleColor: Colors.red,
                   onTap: () => _confirmLogout(context),
                 ),
+
                 const Divider(),
 
-                // Preferences Section
+                /// PREFERENCES
                 _buildSectionHeader('Preferences'),
-                _buildSettingsTile(
-                  icon: Icons.dark_mode,
-                  title: 'Dark Mode',
-                  trailing: Switch(
-                    activeColor: primaryColor,
-                    value: true,
-                    onChanged: (val) {},
-                  ),
+
+                /// THEME SELECTOR
+                ValueListenableBuilder<ThemeMode>(
+                  valueListenable: ThemeController.themeMode,
+                  builder: (context, mode, _) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "App Theme",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+                          SegmentedButton<ThemeMode>(
+                            segments: const [
+                              ButtonSegment(
+                                value: ThemeMode.light,
+                                label: Text("Light"),
+                                icon: Icon(Icons.light_mode),
+                              ),
+                              ButtonSegment(
+                                value: ThemeMode.dark,
+                                label: Text("Dark"),
+                                icon: Icon(Icons.dark_mode),
+                              ),
+                              ButtonSegment(
+                                value: ThemeMode.system,
+                                label: Text("System"),
+                                icon: Icon(Icons.phone_android),
+                              ),
+                            ],
+                            selected: {mode},
+                            onSelectionChanged: (newSelection) {
+                              ThemeController.setTheme(newSelection.first);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
+
                 _buildSettingsTile(
                   icon: Icons.notifications,
                   title: 'Notifications',
                   trailing: Switch(
-                    activeColor: primaryColor,
+                    activeThumbColor: primaryColor,
                     value: false,
                     onChanged: (val) {},
                   ),
                 ),
+
                 const Divider(),
 
-                // About Section
+                /// ABOUT
                 _buildSectionHeader('About'),
                 _buildSettingsTile(
                   icon: Icons.info,
                   title: 'App Version',
                   subtitle: 'v1.0.0',
-                  onTap: () {},
                 ),
-                _buildSettingsTile(
-                  icon: Icons.help,
-                  title: 'Help & Support',
-                  onTap: () {},
-                ),
+                _buildSettingsTile(icon: Icons.help, title: 'Help & Support'),
               ],
             ),
           ),
