@@ -291,7 +291,13 @@ class _AuthPageState extends State<AuthPage> {
       }
 
       try {
-        final user = await auth.signUpEmail(email, pass);
+        final user = await auth.signUpEmail(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+          firstName: firstNameController.text.trim(),
+          lastName: lastNameController.text.trim(),
+          phone: phoneController.text.trim(),
+        );
         if (!mounted) return;
 
         if (user != null) {

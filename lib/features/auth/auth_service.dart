@@ -7,7 +7,7 @@ class AuthService {
   final GoogleSignIn _google = GoogleSignIn();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// SIGN IN WITH GOOGLE
+  /// GOOGLE SIGN IN
   Future<User?> signInWithGoogle() async {
     final googleUser = await _google.signIn();
     if (googleUser == null) return null;
@@ -23,13 +23,13 @@ class AuthService {
     final user = userCred.user;
 
     if (user != null) {
-      await _syncUserToFirestore(user);
+      await _createUserIfNotExists(user);
     }
 
     return user;
   }
 
-  /// SIGN IN WITH EMAIL
+  /// EMAIL LOGIN
   Future<User?> signInEmail(String email, String password) async {
     final cred = await _auth.signInWithEmailAndPassword(
       email: email,
@@ -39,14 +39,20 @@ class AuthService {
     final user = cred.user;
 
     if (user != null) {
-      await _syncUserToFirestore(user);
+      await _createUserIfNotExists(user);
     }
 
     return user;
   }
 
-  /// SIGN UP WITH EMAIL
-  Future<User?> signUpEmail(String email, String password) async {
+  /// EMAIL SIGN UP
+  Future<User?> signUpEmail({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String phone,
+  }) async {
     final cred = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
@@ -55,14 +61,24 @@ class AuthService {
     final user = cred.user;
 
     if (user != null) {
-      await _syncUserToFirestore(user);
+      await _firestore.collection("users").doc(user.uid).set({
+        "firstName": firstName,
+        "lastName": lastName,
+        "email": email,
+        "phone": phone,
+        "photo": "",
+        "country": "",
+        "city": "",
+        "state": "",
+        "createdAt": FieldValue.serverTimestamp(),
+      });
     }
 
     return user;
   }
 
-  /// CREATE OR UPDATE USER PROFILE IN FIRESTORE
-  Future<void> _syncUserToFirestore(User user) async {
+  /// CREATE USER PROFILE IF IT DOES NOT EXIST
+  Future<void> _createUserIfNotExists(User user) async {
     final userDoc = _firestore.collection("users").doc(user.uid);
 
     final snapshot = await userDoc.get();
@@ -77,8 +93,8 @@ class AuthService {
         "firstName": firstName,
         "lastName": lastName,
         "email": user.email ?? "",
-        "photo": user.photoURL ?? "",
         "phone": "",
+        "photo": user.photoURL ?? "",
         "country": "",
         "city": "",
         "state": "",
@@ -93,7 +109,7 @@ class AuthService {
     await _google.signOut();
   }
 
-  /// CHECK IF USER IS LOGGED IN
+  /// CHECK LOGIN
   bool get isLoggedIn => _auth.currentUser != null;
 
   User? get currentUser => _auth.currentUser;
