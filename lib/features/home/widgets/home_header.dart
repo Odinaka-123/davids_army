@@ -7,6 +7,8 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return SafeArea(
       bottom: false,
       child: Container(
@@ -16,21 +18,14 @@ class HomeHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Settings Icon
-            GestureDetector(
-              onTap: () {
+            IconButton.filledTonal(
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const SettingsPage()),
                 );
               },
-              child: const CircleAvatar(
-                radius: 20,
-                backgroundColor: Color(0xFFF1F5F9),
-                child: Icon(
-                  Iconsax.setting_2,
-                  color: Color(0xFF334155),
-                ), // settings icon
-              ),
+              icon: const Icon(Iconsax.setting_2),
             ),
 
             // Notification Icon
@@ -38,20 +33,21 @@ class HomeHeader extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () {},
-                  icon: const Icon(
+                  icon: Icon(
                     Iconsax.notification,
                     size: 26,
-                    color: Color(0xFF334155),
+                    color: colors.onSurface,
                   ),
                 ),
+
                 Positioned(
                   right: 10,
                   top: 10,
                   child: Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
+                    decoration: BoxDecoration(
+                      color: colors.error,
                       shape: BoxShape.circle,
                     ),
                   ),

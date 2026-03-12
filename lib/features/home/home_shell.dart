@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:go_router/go_router.dart';
+import '../notifications/notification_popup.dart'; // import your popup
 
 class HomeShell extends StatelessWidget {
   final Widget child;
@@ -44,73 +45,78 @@ class HomeShell extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      extendBody: true, // ⭐ allows body to extend under system nav bar
-      body: child,
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(32, 0, 32, 16 + bottomPadding),
-        child: Material(
-          elevation: 12,
-          borderRadius: BorderRadius.circular(40),
-          color: Colors.transparent,
-          child: Container(
-            height: 70,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: colors.surface,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: colors.background,
+          extendBody: true, // allows body to extend under system nav bar
+          body: child,
+          bottomNavigationBar: Padding(
+            padding: EdgeInsets.fromLTRB(32, 0, 32, 16 + bottomPadding),
+            child: Material(
+              elevation: 12,
               borderRadius: BorderRadius.circular(40),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                  offset: Offset(0, 4),
+              color: Colors.transparent,
+              child: Container(
+                height: 70,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(40),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  icon: Iconsax.home_2,
-                  selectedIcon: Iconsax.home_25,
-                  index: 0,
-                  currentIndex: currentIndex,
-                  context: context,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(
+                      icon: Iconsax.home_2,
+                      selectedIcon: Iconsax.home_25,
+                      index: 0,
+                      currentIndex: currentIndex,
+                      context: context,
+                    ),
+                    _buildNavItem(
+                      icon: Iconsax.book,
+                      selectedIcon: Iconsax.book_1,
+                      index: 1,
+                      currentIndex: currentIndex,
+                      context: context,
+                    ),
+                    _buildNavItem(
+                      icon: Iconsax.video,
+                      selectedIcon: Iconsax.video_play,
+                      index: 2,
+                      currentIndex: currentIndex,
+                      context: context,
+                    ),
+                    _buildNavItem(
+                      icon: Iconsax.calendar,
+                      selectedIcon: Iconsax.calendar_1,
+                      index: 3,
+                      currentIndex: currentIndex,
+                      context: context,
+                    ),
+                    _buildNavItem(
+                      icon: Iconsax.user,
+                      selectedIcon: Iconsax.user_octagon,
+                      index: 4,
+                      currentIndex: currentIndex,
+                      context: context,
+                    ),
+                  ],
                 ),
-                _buildNavItem(
-                  icon: Iconsax.book,
-                  selectedIcon: Iconsax.book_1,
-                  index: 1,
-                  currentIndex: currentIndex,
-                  context: context,
-                ),
-                _buildNavItem(
-                  icon: Iconsax.video,
-                  selectedIcon: Iconsax.video_play,
-                  index: 2,
-                  currentIndex: currentIndex,
-                  context: context,
-                ),
-                _buildNavItem(
-                  icon: Iconsax.calendar,
-                  selectedIcon: Iconsax.calendar_1,
-                  index: 3,
-                  currentIndex: currentIndex,
-                  context: context,
-                ),
-                _buildNavItem(
-                  icon: Iconsax.user,
-                  selectedIcon: Iconsax.user_octagon,
-                  index: 4,
-                  currentIndex: currentIndex,
-                  context: context,
-                ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
+        const NotificationPopup(), // 🔔 added notification popup globally
+      ],
     );
   }
 

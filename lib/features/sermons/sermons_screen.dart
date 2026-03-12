@@ -22,19 +22,26 @@ class _SermonsScreenState extends State<SermonsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Material(
-      color: const Color(0xFFF8F9FB),
+      color: colors.background,
       child: SafeArea(
         child: Column(
           children: [
             /// 🔴 Title
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: Text(
                 "Sermons",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
+
+            /// 🔎 Search
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: TextField(
@@ -45,7 +52,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   hintText: "Search sermons...",
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: colors.surface,
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -54,16 +61,21 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+
+            /// Section Title
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Latest Sermons",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
+
             Expanded(
               child: FutureBuilder<List<Sermon>>(
                 future: _futureSermons,
@@ -87,7 +99,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
                   }
 
                   return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                     itemCount: sermons.length,
                     itemBuilder: (context, index) {
                       return Padding(

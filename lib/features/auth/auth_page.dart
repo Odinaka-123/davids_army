@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../features/auth/auth_service.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/services/notification_service.dart';
+import '../../models/app_notification.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -35,7 +37,6 @@ class _AuthPageState extends State<AuthPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Removed BackButton
               if (isLogin)
                 Align(
                   alignment: Alignment.topRight,
@@ -167,9 +168,7 @@ class _AuthPageState extends State<AuthPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      // TODO: forgot password logic
-                    },
+                    onPressed: () {},
                     child: const Text("Forgot Password?"),
                   ),
                 ),
@@ -181,49 +180,7 @@ class _AuthPageState extends State<AuthPage> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    final email = emailController.text.trim();
-                    final pass = passwordController.text.trim();
-
-                    if (isLogin) {
-                      try {
-                        final user = await auth.signInEmail(email, pass);
-                        if (!mounted) return;
-                        if (user != null) context.go('/');
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
-                    } else {
-                      final confirm = confirmPasswordController.text.trim();
-
-                      if (pass != confirm) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Passwords do not match"),
-                          ),
-                        );
-                        return;
-                      }
-
-                      try {
-                        final user = await auth.signUpEmail(
-                          email,
-                          pass,
-                        ); // only 2 args
-                        if (!mounted) return;
-                        if (user != null) context.go('/');
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
-                    }
-                  },
+                  onPressed: _handleEmailAuth,
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -251,11 +208,7 @@ class _AuthPageState extends State<AuthPage> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final user = await auth.signInWithGoogle();
-                        if (!mounted) return;
-                        if (user != null) context.go('/');
-                      },
+                      onPressed: _handleGoogleSignIn,
                       icon: const FaIcon(FontAwesomeIcons.google),
                       label: const Text("Google"),
                     ),
@@ -263,9 +216,7 @@ class _AuthPageState extends State<AuthPage> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        // TODO: Apple sign-in
-                      },
+                      onPressed: () {},
                       icon: const Icon(Icons.apple),
                       label: const Text("Apple"),
                     ),
@@ -295,5 +246,105 @@ class _AuthPageState extends State<AuthPage> {
         ),
       ),
     );
+  }
+
+  // Email Sign-In / Sign-Up
+  void _handleEmailAuth() async {
+    final email = emailController.text.trim();
+    final pass = passwordController.text.trim();
+
+    if (isLogin) {
+      // EMAIL LOGIN
+      try {
+        final user = await auth.signInEmail(email, pass);
+        if (!mounted) return;
+
+        if (user != null) {
+          context.go('/'); // navigate first
+          Future.delayed(Duration.zero, () {
+            NotificationService().addNotification(
+              AppNotification(
+                title: "Login Successful",
+                message: "You have logged in successfully.",
+                route: "/home",
+                createdAt: DateTime.now(),
+              ),
+            );
+          });
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } else {
+      // SIGN-UP
+      final confirm = confirmPasswordController.text.trim();
+
+      if (pass != confirm) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Passwords do not match")));
+        return;
+      }
+
+      try {
+        final user = await auth.signUpEmail(email, pass);
+        if (!mounted) return;
+
+        if (user != null) {
+          context.go('/'); // navigate first
+          Future.delayed(Duration.zero, () {
+            NotificationService().addNotification(
+              AppNotification(
+                title: "Registration Successful",
+                message: "Your account has been created.",
+                route: "/home",
+                createdAt: DateTime.now(),
+              ),
+            );
+          });
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+
+  // Google Sign-In
+  void _handleGoogleSignIn() async {
+    try {
+      final user = await auth.signInWithGoogle();
+      if (!mounted) return;
+
+      if (user == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Google sign-in failed")));
+        return;
+      }
+
+      context.go('/'); // navigate first
+      Future.delayed(Duration.zero, () {
+        NotificationService().addNotification(
+          AppNotification(
+            title: "Login Successful",
+            message: "You have signed in with Google.",
+            route: "/home",
+            createdAt: DateTime.now(),
+          ),
+        );
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Google Sign-In Error: $e")));
+    }
   }
 }
