@@ -42,6 +42,10 @@ class DavidsArmyApp extends StatelessWidget {
           themeMode: mode,
 
           routerConfig: AppRouter.router,
+
+          builder: (context, child) {
+            return Scaffold(extendBody: true, body: child);
+          },
         );
       },
     );
