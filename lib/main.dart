@@ -10,10 +10,8 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
 
-  // Enables edge-to-edge layout
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  // Makes Android navigation bar transparent
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       systemNavigationBarColor: Colors.transparent,

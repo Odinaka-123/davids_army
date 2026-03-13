@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../features/auth/auth_service.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/services/notification_service.dart';
-import '../../models/app_notification.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -254,23 +252,18 @@ class _AuthPageState extends State<AuthPage> {
     final pass = passwordController.text.trim();
 
     if (isLogin) {
-      // EMAIL LOGIN
       try {
         final user = await auth.signInEmail(email, pass);
         if (!mounted) return;
 
         if (user != null) {
+          final verified = await auth.isVerified(user.uid);
+          if (!verified) {
+            context.go('/verify-code');
+            return;
+          }
+
           context.go('/'); // navigate first
-          Future.delayed(Duration.zero, () {
-            NotificationService().addNotification(
-              AppNotification(
-                title: "Login Successful",
-                message: "You have logged in successfully.",
-                route: "/home",
-                createdAt: DateTime.now(),
-              ),
-            );
-          });
         }
       } catch (e) {
         if (!mounted) return;
@@ -281,7 +274,6 @@ class _AuthPageState extends State<AuthPage> {
     } else {
       // SIGN-UP
       final confirm = confirmPasswordController.text.trim();
-
       if (pass != confirm) {
         if (!mounted) return;
         ScaffoldMessenger.of(
@@ -298,20 +290,8 @@ class _AuthPageState extends State<AuthPage> {
           lastName: lastNameController.text.trim(),
           phone: phoneController.text.trim(),
         );
-        if (!mounted) return;
-
         if (user != null) {
-          context.go('/'); // navigate first
-          Future.delayed(Duration.zero, () {
-            NotificationService().addNotification(
-              AppNotification(
-                title: "Registration Successful",
-                message: "Your account has been created.",
-                route: "/home",
-                createdAt: DateTime.now(),
-              ),
-            );
-          });
+          context.go('/verify-code'); // redirect to verification page
         }
       } catch (e) {
         if (!mounted) return;
@@ -336,16 +316,6 @@ class _AuthPageState extends State<AuthPage> {
       }
 
       context.go('/'); // navigate first
-      Future.delayed(Duration.zero, () {
-        NotificationService().addNotification(
-          AppNotification(
-            title: "Login Successful",
-            message: "You have signed in with Google.",
-            route: "/home",
-            createdAt: DateTime.now(),
-          ),
-        );
-      });
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
