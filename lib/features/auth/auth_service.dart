@@ -103,14 +103,12 @@ class AuthService {
     }
   }
 
-  /// SEND VERIFICATION CODE
   Future<void> sendVerificationCode(String uid, String email) async {
     final code = Random().nextInt(900000) + 100000; // 6-digit
     await _firestore.collection("users").doc(uid).update({
       "verificationCode": code,
     });
 
-    // TODO: send code to email using cloud function / backend
     print("Verification code for $email: $code");
   }
 
