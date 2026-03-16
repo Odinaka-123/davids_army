@@ -96,7 +96,7 @@ class AuthService {
         "email": user.email ?? "",
         "photo": user.photoURL ?? "",
         "phone": "",
-        "isVerified": true, // auto-verified for Google
+        "isVerified": true,
         "verificationCode": null,
         "createdAt": FieldValue.serverTimestamp(),
       });
