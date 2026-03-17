@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../features/auth/auth_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,7 +14,6 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   final auth = AuthService();
 
-  // Form controllers
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
@@ -21,10 +21,9 @@ class _AuthPageState extends State<AuthPage> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  // Toggles
   bool hidePassword = true;
   bool hideConfirmPassword = true;
-  bool isLogin = true; // true = Login, false = Sign-Up
+  bool isLogin = true;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +44,6 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               const SizedBox(height: 24),
 
-              // Title
               Text(
                 isLogin ? "Hi There! 👋" : "Register",
                 style: const TextStyle(
@@ -63,7 +61,6 @@ class _AuthPageState extends State<AuthPage> {
               const SizedBox(height: 24),
 
               if (!isLogin) ...[
-                // First Name
                 TextField(
                   controller: firstNameController,
                   decoration: InputDecoration(
@@ -75,7 +72,6 @@ class _AuthPageState extends State<AuthPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Last Name
                 TextField(
                   controller: lastNameController,
                   decoration: InputDecoration(
@@ -87,7 +83,6 @@ class _AuthPageState extends State<AuthPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Phone
                 TextField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
@@ -101,7 +96,6 @@ class _AuthPageState extends State<AuthPage> {
                 const SizedBox(height: 16),
               ],
 
-              // Email
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
@@ -114,7 +108,6 @@ class _AuthPageState extends State<AuthPage> {
               ),
               const SizedBox(height: 16),
 
-              // Password
               TextField(
                 controller: passwordController,
                 obscureText: hidePassword,
@@ -138,7 +131,6 @@ class _AuthPageState extends State<AuthPage> {
               const SizedBox(height: 16),
 
               if (!isLogin)
-                // Confirm Password
                 TextField(
                   controller: confirmPasswordController,
                   obscureText: hideConfirmPassword,
@@ -173,22 +165,17 @@ class _AuthPageState extends State<AuthPage> {
 
               const SizedBox(height: 24),
 
-              // Submit Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
                   onPressed: _handleEmailAuth,
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
                   child: Text(isLogin ? "Sign In" : "Sign Up"),
                 ),
               ),
 
               const SizedBox(height: 16),
+
               Row(
                 children: const [
                   Expanded(child: Divider()),
@@ -199,9 +186,9 @@ class _AuthPageState extends State<AuthPage> {
                   Expanded(child: Divider()),
                 ],
               ),
+
               const SizedBox(height: 16),
 
-              // Social Buttons
               Row(
                 children: [
                   Expanded(
@@ -224,7 +211,6 @@ class _AuthPageState extends State<AuthPage> {
 
               const SizedBox(height: 24),
 
-              // Toggle Login / Sign-Up
               Center(
                 child: TextButton(
                   onPressed: () {
@@ -246,7 +232,7 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  // Email Sign-In / Sign-Up
+  // 🔥 FIXED AUTH FLOW
   void _handleEmailAuth() async {
     final email = emailController.text.trim();
     final pass = passwordController.text.trim();
@@ -254,16 +240,18 @@ class _AuthPageState extends State<AuthPage> {
     if (isLogin) {
       try {
         final user = await auth.signInEmail(email, pass);
+
         if (!mounted) return;
 
         if (user != null) {
           final verified = await auth.isVerified(user.uid);
+
           if (!verified) {
             context.go('/verify-code');
             return;
           }
 
-          context.go('/'); // navigate first
+          context.go('/');
         }
       } catch (e) {
         if (!mounted) return;
@@ -272,10 +260,9 @@ class _AuthPageState extends State<AuthPage> {
         ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } else {
-      // SIGN-UP
       final confirm = confirmPasswordController.text.trim();
+
       if (pass != confirm) {
-        if (!mounted) return;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Passwords do not match")));
@@ -284,28 +271,58 @@ class _AuthPageState extends State<AuthPage> {
 
       try {
         final user = await auth.signUpEmail(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
+          email: email,
+          password: pass,
           firstName: firstNameController.text.trim(),
           lastName: lastNameController.text.trim(),
           phone: phoneController.text.trim(),
         );
+
         if (user != null) {
-          context.go('/verify-code'); // redirect to verification page
+          context.go('/verify-code');
         }
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'email-already-in-use') {
+          try {
+            final user = await auth.signInEmail(email, pass);
+
+            if (user != null) {
+              final verified = await auth.isVerified(user.uid);
+
+              if (!verified) {
+                await auth.sendVerificationCode(user.uid, email);
+
+                if (!mounted) return;
+                context.go('/verify-code');
+                return;
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Email already in use. Please login."),
+                  ),
+                );
+              }
+            }
+          } catch (_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Email already in use. Try logging in."),
+              ),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+        }
       }
     }
   }
 
-  // Google Sign-In
   void _handleGoogleSignIn() async {
     try {
       final user = await auth.signInWithGoogle();
+
       if (!mounted) return;
 
       if (user == null) {
@@ -315,7 +332,7 @@ class _AuthPageState extends State<AuthPage> {
         return;
       }
 
-      context.go('/'); // navigate first
+      context.go('/');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
