@@ -1,13 +1,17 @@
 require("dotenv").config();
 const express = require("express");
-const mailjet = require("node-mailjet").connect(
-  process.env.MAILJET_API_KEY,
-  process.env.MAILJET_SECRET_KEY
-);
+const Mailjet = require("node-mailjet"); // Updated import
 
 const app = express();
 app.use(express.json());
 
+// Initialize Mailjet client
+const mailjet = new Mailjet({
+  apiKey: process.env.MAILJET_API_KEY,
+  apiSecret: process.env.MAILJET_SECRET_KEY,
+});
+
+// Temporary in-memory storage for verification codes
 const verificationCodes = {};
 
 // Root route
@@ -24,26 +28,26 @@ app.post("/send-verification", async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000);
     verificationCodes[email] = code; // store code temporarily
 
-    const request = mailjet.post("send", { version: "v3.1" }).request({
-      Messages: [
-        {
-          From: {
-            Email: process.env.MAILJET_SENDER_EMAIL,
-            Name: process.env.MAILJET_SENDER_NAME,
-          },
-          To: [
-            {
-              Email: email,
-              Name: "",
+    await mailjet
+      .post("send", { version: "v3.1" })
+      .request({
+        Messages: [
+          {
+            From: {
+              Email: process.env.MAILJET_SENDER_EMAIL,
+              Name: process.env.MAILJET_SENDER_NAME,
             },
-          ],
-          Subject: "Your Verification Code",
-          TextPart: `Your verification code is: ${code}`,
-        },
-      ],
-    });
-
-    await request;
+            To: [
+              {
+                Email: email,
+                Name: "",
+              },
+            ],
+            Subject: "Your Verification Code",
+            TextPart: `Your verification code is: ${code}`,
+          },
+        ],
+      });
 
     res.json({ message: "Verification email sent", code }); // remove code in production
   } catch (err) {
