@@ -1,52 +1,69 @@
 require("dotenv").config();
 const express = require("express");
-const { BrevoClient } = require("@getbrevo/brevo");
+const mailjet = require("node-mailjet").connect(
+  process.env.MAILJET_API_KEY,
+  process.env.MAILJET_SECRET_KEY
+);
 
 const app = express();
 app.use(express.json());
 
-// Initialize Brevo client
-const brevo = new BrevoClient({
-  apiKey: process.env.BREVO_API_KEY,
-});
+const verificationCodes = {};
 
 // Root route
 app.get("/", (req, res) => {
   res.send("David's Army Backend is online!");
 });
 
-// POST /send-verification
+// Send verification code
 app.post("/send-verification", async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: "Email is required" });
-    }
+    if (!email) return res.status(400).json({ error: "Email is required" });
 
-    // Generate 6-digit verification code
     const code = Math.floor(100000 + Math.random() * 900000);
+    verificationCodes[email] = code; // store code temporarily
 
-    // Send email via Brevo
-    const response = await brevo.transactionalEmails.sendTransacEmail({
-      sender: {
-        email: process.env.BREVO_SENDER_EMAIL,
-        name: process.env.BREVO_SENDER_NAME,
-      },
-      to: [{ email, name: "" }],
-      subject: "Your Verification Code",
-      textContent: `Your verification code is: ${code}`,
+    const request = mailjet.post("send", { version: "v3.1" }).request({
+      Messages: [
+        {
+          From: {
+            Email: process.env.MAILJET_SENDER_EMAIL,
+            Name: process.env.MAILJET_SENDER_NAME,
+          },
+          To: [
+            {
+              Email: email,
+              Name: "",
+            },
+          ],
+          Subject: "Your Verification Code",
+          TextPart: `Your verification code is: ${code}`,
+        },
+      ],
     });
 
-    res.json({
-      message: "Verification email sent",
-      code, // only for testing; remove in production
-    });
+    await request;
+
+    res.json({ message: "Verification email sent", code }); // remove code in production
   } catch (err) {
-    console.error("Brevo error:", err.response?.data || err);
+    console.error("Mailjet error:", err);
     res.status(500).json({
       error: "Failed to send email",
-      details: err.response?.data || err.message,
+      details: err.message,
     });
+  }
+});
+
+// Verify code
+app.post("/verify-code", (req, res) => {
+  const { email, code } = req.body;
+
+  if (verificationCodes[email] == code) {
+    delete verificationCodes[email]; // remove after verification
+    return res.json({ message: "Email verified successfully" });
+  } else {
+    return res.status(400).json({ error: "Invalid code" });
   }
 });
 
