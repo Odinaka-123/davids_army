@@ -1,9 +1,11 @@
 require("dotenv").config();
 const express = require("express");
 const nodemailer = require("nodemailer");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -17,18 +19,15 @@ const transporter = nodemailer.createTransport({
 // In-memory storage for verification codes
 const verificationCodes = {};
 
-// Function to clean expired codes every 10 minutes
-setInterval(
-  () => {
-    const now = Date.now();
-    for (const email in verificationCodes) {
-      if (verificationCodes[email].expiresAt < now) {
-        delete verificationCodes[email];
-      }
+// Clean expired codes every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const email in verificationCodes) {
+    if (verificationCodes[email].expiresAt < now) {
+      delete verificationCodes[email];
     }
-  },
-  10 * 60 * 1000,
-); // every 10 minutes
+  }
+}, 10 * 60 * 1000);
 
 // Root route
 app.get("/", (req, res) => {
@@ -39,7 +38,15 @@ app.get("/", (req, res) => {
 app.post("/send-verification", async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ error: "Email is required" });
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    // Prevent spam: don't resend if code still valid
+    const existing = verificationCodes[email];
+    if (existing && Date.now() < existing.expiresAt) {
+      return res.json({ message: "Verification code already sent. Check your email." });
+    }
 
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000);
@@ -47,43 +54,31 @@ app.post("/send-verification", async (req, res) => {
     // Store code with 5-min expiry
     verificationCodes[email] = {
       code,
-      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+      expiresAt: Date.now() + 5 * 60 * 1000,
     };
 
-    // Prepare email content
+    // Email content
     const mailOptions = {
       from: `"David's Army" <${process.env.GMAIL_EMAIL}>`,
       to: email,
       subject: "Your David's Army Verification Code",
-      text: `Hello,
-
-Your verification code is: ${code}
-
-This code will expire in 5 minutes.
-
-If you did not request this, please ignore this email.
-
-- David's Army Team`,
-      html: `<div style="font-family: Arial, sans-serif; color:#333;">
-        <h2 style="color:#2c3e50;">David's Army Verification</h2>
-        <p>Hello,</p>
-        <p>Your verification code is:</p>
-        <h1 style="color:#e74c3c;">${code}</h1>
-        <p>This code will expire in <strong>5 minutes</strong>.</p>
-        <p>If you did not request this, please ignore this email.</p>
-        <hr>
-        <p style="font-size:0.85em; color:#888;">- David's Army Team</p>
-      </div>`,
+      text: `Your verification code is ${code}. It expires in 5 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color:#333;">
+          <h2>David's Army Verification</h2>
+          <p>Your verification code is:</p>
+          <h1 style="color:#e74c3c;">${code}</h1>
+          <p>This code will expire in <strong>5 minutes</strong>.</p>
+        </div>
+      `,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.json({ message: "Verification email sent", code }); // remove code in production
+    res.json({ message: "Verification email sent" });
   } catch (err) {
     console.error("Nodemailer error:", err);
-    res
-      .status(500)
-      .json({ error: "Failed to send email", details: err.message });
+    res.status(500).json({ error: "Failed to send email" });
   }
 });
 
@@ -91,12 +86,20 @@ If you did not request this, please ignore this email.
 app.post("/verify-code", (req, res) => {
   const { email, code } = req.body;
 
+  if (!email || !code) {
+    return res.status(400).json({ error: "Email and code are required" });
+  }
+
   const stored = verificationCodes[email];
-  if (!stored) return res.status(400).json({ error: "No code found" });
+  if (!stored) {
+    return res.status(400).json({ error: "No verification code found" });
+  }
+
   if (Date.now() > stored.expiresAt) {
     delete verificationCodes[email];
     return res.status(400).json({ error: "Code expired" });
   }
+
   if (stored.code == code) {
     delete verificationCodes[email];
     return res.json({ message: "Email verified successfully" });

@@ -7,6 +7,7 @@ import '../../features/settings/profile_page.dart';
 import '../../features/settings/edit_profile_page.dart';
 import '../../features/auth/verify_code_page.dart';
 import '../../features/auth/auth_service.dart';
+import '../services/backend_service.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -15,7 +16,6 @@ class AppRouter {
     routes: [
       GoRoute(path: '/auth', builder: (context, state) => const AuthPage()),
 
-      // Shell route
       ShellRoute(
         builder: (context, state, child) => HomeShell(child: child),
         routes: [
@@ -48,18 +48,29 @@ class AppRouter {
       final goingToAuth = path == '/auth';
       final goingToVerify = path == '/verify-code';
 
-      // Not logged in → force AuthPage
-      if (user == null && !goingToAuth) return '/auth';
+      // 🚫 NOT LOGGED IN
+      if (user == null && !goingToAuth) {
+        return '/auth';
+      }
 
-      // Logged in → check verification
+      // ✅ LOGGED IN → CHECK BACKEND VERIFICATION
       if (user != null) {
-        final verified = await authService.isVerified(user.uid);
+        final email = user.email;
 
-        // Not verified → force verify-code unless already there or going back to auth
-        if (!verified && !goingToVerify && !goingToAuth) return '/verify-code';
+        // Safety check
+        if (email == null) return '/auth';
 
-        // Verified → skip auth page
-        if (verified && goingToAuth) return '/';
+        final verified = await BackendService.isEmailVerified(email);
+
+        // ❌ NOT VERIFIED
+        if (!verified && !goingToVerify && !goingToAuth) {
+          return '/verify-code';
+        }
+
+        // ✅ VERIFIED → BLOCK AUTH PAGE
+        if (verified && goingToAuth) {
+          return '/';
+        }
       }
 
       return null;

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../features/auth/auth_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -244,20 +243,19 @@ class _AuthPageState extends State<AuthPage> {
         if (!mounted) return;
 
         if (user != null) {
-          final verified = await auth.isVerified(user.uid);
-
-          if (!verified) {
-            context.go('/verify-code');
-            return;
-          }
-
           context.go('/');
         }
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+
+        // 🔥 If not verified → send to verify page
+        if (e.toString().contains("not verified")) {
+          context.go('/verify-code');
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
+        }
       }
     } else {
       final confirm = confirmPasswordController.text.trim();
@@ -278,43 +276,17 @@ class _AuthPageState extends State<AuthPage> {
           phone: phoneController.text.trim(),
         );
 
+        if (!mounted) return;
+
         if (user != null) {
           context.go('/verify-code');
         }
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'email-already-in-use') {
-          try {
-            final user = await auth.signInEmail(email, pass);
+      } catch (e) {
+        if (!mounted) return;
 
-            if (user != null) {
-              final verified = await auth.isVerified(user.uid);
-
-              if (!verified) {
-                await auth.sendVerificationCode(user.uid, email);
-
-                if (!mounted) return;
-                context.go('/verify-code');
-                return;
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Email already in use. Please login."),
-                  ),
-                );
-              }
-            }
-          } catch (_) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Email already in use. Try logging in."),
-              ),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
-        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }

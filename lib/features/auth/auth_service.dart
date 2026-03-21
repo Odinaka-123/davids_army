@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'dart:math';
+import '../../core/services/backend_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -20,6 +20,7 @@ class AuthService {
       email: email,
       password: password,
     );
+
     final user = cred.user;
 
     if (user != null) {
@@ -29,18 +30,33 @@ class AuthService {
         lastName: lastName,
         phone: phone,
       );
-      await sendVerificationCode(user.uid, email);
+
+      // 🔥 SEND EMAIL VIA BACKEND
+      await BackendService.sendVerificationEmail(email);
     }
+
     return user;
   }
 
-  /// EMAIL SIGN-IN
+  /// EMAIL SIGN-IN (WITH VERIFICATION CHECK)
   Future<User?> signInEmail(String email, String password) async {
     final cred = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
+
     final user = cred.user;
+
+    if (user != null) {
+      // 🔐 CHECK BACKEND VERIFICATION
+      final verified = await BackendService.isEmailVerified(email);
+
+      if (!verified) {
+        await _auth.signOut();
+        throw Exception("Email not verified");
+      }
+    }
+
     return user;
   }
 
@@ -50,6 +66,7 @@ class AuthService {
     if (googleUser == null) return null;
 
     final googleAuth = await googleUser.authentication;
+
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
@@ -73,22 +90,22 @@ class AuthService {
     required String phone,
   }) async {
     final doc = _firestore.collection("users").doc(user.uid);
+
     await doc.set({
       "firstName": firstName,
       "lastName": lastName,
       "email": user.email ?? "",
       "phone": phone,
       "photo": user.photoURL ?? "",
-      "isVerified": false,
-      "verificationCode": null,
       "createdAt": FieldValue.serverTimestamp(),
     });
   }
 
-  /// CREATE PROFILE IF GOOGLE USER DOESN'T EXIST
+  /// GOOGLE PROFILE (ONLY IF NEW)
   Future<void> _createUserProfileIfNotExists(User user) async {
     final doc = _firestore.collection("users").doc(user.uid);
     final snap = await doc.get();
+
     if (!snap.exists) {
       await doc.set({
         "firstName": user.displayName?.split(" ").first ?? "",
@@ -96,43 +113,9 @@ class AuthService {
         "email": user.email ?? "",
         "photo": user.photoURL ?? "",
         "phone": "",
-        "isVerified": true,
-        "verificationCode": null,
         "createdAt": FieldValue.serverTimestamp(),
       });
     }
-  }
-
-  Future<void> sendVerificationCode(String uid, String email) async {
-    final code = Random().nextInt(900000) + 100000; // 6-digit
-    await _firestore.collection("users").doc(uid).update({
-      "verificationCode": code,
-    });
-
-    print("Verification code for $email: $code");
-  }
-
-  /// VERIFY CODE
-  Future<bool> verifyCode(String uid, String codeInput) async {
-    final doc = await _firestore.collection("users").doc(uid).get();
-    final data = doc.data();
-    if (data == null) return false;
-
-    final code = data["verificationCode"].toString();
-    if (code == codeInput) {
-      await _firestore.collection("users").doc(uid).update({
-        "isVerified": true,
-        "verificationCode": null,
-      });
-      return true;
-    }
-    return false;
-  }
-
-  /// CHECK IF VERIFIED
-  Future<bool> isVerified(String uid) async {
-    final doc = await _firestore.collection("users").doc(uid).get();
-    return doc.data()?["isVerified"] ?? false;
   }
 
   /// LOGOUT

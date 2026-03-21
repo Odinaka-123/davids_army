@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'auth_service.dart';
+import '../../core/services/backend_service.dart';
 
 class VerifyCodePage extends StatefulWidget {
   const VerifyCodePage({super.key});
@@ -12,6 +13,7 @@ class VerifyCodePage extends StatefulWidget {
 class _VerifyCodePageState extends State<VerifyCodePage> {
   final auth = AuthService();
   final codeController = TextEditingController();
+
   bool verifying = false;
   bool sendingCode = false;
 
@@ -19,11 +21,10 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
   Widget build(BuildContext context) {
     final email = auth.currentUser?.email ?? "<your email>";
 
-    return WillPopScope(
-      onWillPop: () async {
-        // Allow going back to AuthPage
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
         context.go('/auth');
-        return false;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -48,7 +49,6 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                 children: [
                   Text(
                     "Enter the 6-digit verification code sent to",
-                    style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
@@ -61,11 +61,11 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
+
                   TextField(
                     controller: codeController,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 20),
                     decoration: InputDecoration(
                       hintText: "Enter code",
                       border: OutlineInputBorder(
@@ -73,7 +73,9 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 16),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -95,15 +97,11 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 24),
+
                   ElevatedButton(
                     onPressed: verifying ? null : _verifyCode,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
                     child: verifying
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text("Verify"),
@@ -117,39 +115,43 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
     );
   }
 
+  /// ✅ VERIFY WITH BACKEND
   void _verifyCode() async {
-    if (auth.currentUser == null) return;
+    final email = auth.currentUser?.email;
+    if (email == null) return;
 
     setState(() => verifying = true);
 
-    final success = await auth.verifyCode(
-      auth.currentUser!.uid,
+    final success = await BackendService.verifyCode(
+      email,
       codeController.text.trim(),
     );
 
     setState(() => verifying = false);
 
+    if (!mounted) return;
+
     if (success) {
-      if (!mounted) return;
       context.go('/');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid verification code")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Invalid or expired code")));
     }
   }
 
+  /// ✅ RESEND FROM BACKEND
   void _resendCode() async {
-    if (auth.currentUser == null) return;
+    final email = auth.currentUser?.email;
+    if (email == null) return;
 
     setState(() => sendingCode = true);
 
-    await auth.sendVerificationCode(
-      auth.currentUser!.uid,
-      auth.currentUser!.email ?? "",
-    );
+    await BackendService.sendVerificationEmail(email);
 
     setState(() => sendingCode = false);
+
+    if (!mounted) return;
 
     ScaffoldMessenger.of(
       context,
