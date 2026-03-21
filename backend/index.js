@@ -5,6 +5,10 @@ const nodemailer = require("nodemailer");
 const app = express();
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Davids Army Backend Running");
+});
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -21,8 +25,6 @@ app.post("/send-verification", async (req, res) => {
 
     const code = Math.floor(100000 + Math.random() * 900000);
 
-    // TODO: Save the code to a database (e.g., Firestore or MongoDB)
-    // For now, just send it in email
     const mailOptions = {
       from: process.env.GMAIL_EMAIL,
       to: email,
@@ -31,13 +33,12 @@ app.post("/send-verification", async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.json({ success: true, code }); // code can be removed in production
+    res.json({ success: true, code });
   } catch (err) {
     console.error("Error sending verification code:", err);
     res.status(500).json({ error: "Failed to send code" });
   }
 });
 
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
