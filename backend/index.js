@@ -9,7 +9,9 @@ app.use(cors());
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.GMAIL_EMAIL,
     pass: process.env.GMAIL_APP_PASSWORD,
@@ -20,14 +22,17 @@ const transporter = nodemailer.createTransport({
 const verificationCodes = {};
 
 // Clean expired codes every 10 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const email in verificationCodes) {
-    if (verificationCodes[email].expiresAt < now) {
-      delete verificationCodes[email];
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const email in verificationCodes) {
+      if (verificationCodes[email].expiresAt < now) {
+        delete verificationCodes[email];
+      }
     }
-  }
-}, 10 * 60 * 1000);
+  },
+  10 * 60 * 1000,
+);
 
 // Root route
 app.get("/", (req, res) => {
@@ -45,7 +50,9 @@ app.post("/send-verification", async (req, res) => {
     // Prevent spam: don't resend if code still valid
     const existing = verificationCodes[email];
     if (existing && Date.now() < existing.expiresAt) {
-      return res.json({ message: "Verification code already sent. Check your email." });
+      return res.json({
+        message: "Verification code already sent. Check your email.",
+      });
     }
 
     // Generate 6-digit code
