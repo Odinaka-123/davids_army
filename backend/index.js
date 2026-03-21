@@ -1,38 +1,27 @@
 require("dotenv").config();
+
 const express = require("express");
-const nodemailer = require("nodemailer");
 const cors = require("cors");
+const { Resend } = require("resend");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.GMAIL_EMAIL,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // In-memory storage for verification codes
 const verificationCodes = {};
 
 // Clean expired codes every 10 minutes
-setInterval(
-  () => {
-    const now = Date.now();
-    for (const email in verificationCodes) {
-      if (verificationCodes[email].expiresAt < now) {
-        delete verificationCodes[email];
-      }
+setInterval(() => {
+  const now = Date.now();
+  for (const email in verificationCodes) {
+    if (verificationCodes[email].expiresAt < now) {
+      delete verificationCodes[email];
     }
-  },
-  10 * 60 * 1000,
-);
+  }
+}, 10 * 60 * 1000);
 
 // Root route
 app.get("/", (req, res) => {
@@ -43,11 +32,11 @@ app.get("/", (req, res) => {
 app.post("/send-verification", async (req, res) => {
   try {
     const { email } = req.body;
+
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
     }
 
-    // Prevent spam: don't resend if code still valid
     const existing = verificationCodes[email];
     if (existing && Date.now() < existing.expiresAt) {
       return res.json({
@@ -55,21 +44,17 @@ app.post("/send-verification", async (req, res) => {
       });
     }
 
-    // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000);
 
-    // Store code with 5-min expiry
     verificationCodes[email] = {
       code,
       expiresAt: Date.now() + 5 * 60 * 1000,
     };
 
-    // Email content
-    const mailOptions = {
-      from: `"David's Army" <${process.env.GMAIL_EMAIL}>`,
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
       to: email,
       subject: "Your David's Army Verification Code",
-      text: `Your verification code is ${code}. It expires in 5 minutes.`,
       html: `
         <div style="font-family: Arial, sans-serif; color:#333;">
           <h2>David's Army Verification</h2>
@@ -78,13 +63,11 @@ app.post("/send-verification", async (req, res) => {
           <p>This code will expire in <strong>5 minutes</strong>.</p>
         </div>
       `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
 
     res.json({ message: "Verification email sent" });
   } catch (err) {
-    console.error("Nodemailer error:", err);
+    console.error("Resend error:", err);
     res.status(500).json({ error: "Failed to send email" });
   }
 });
@@ -98,6 +81,7 @@ app.post("/verify-code", (req, res) => {
   }
 
   const stored = verificationCodes[email];
+
   if (!stored) {
     return res.status(400).json({ error: "No verification code found" });
   }
