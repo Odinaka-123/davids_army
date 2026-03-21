@@ -52,7 +52,7 @@ app.post("/send-verification", async (req, res) => {
     };
 
     await resend.emails.send({
-      from: "David's Army <davidsarmy@kakkatech.com>",
+      from: "David's Army <onboarding@resend.dev>",
       to: email,
       subject: "Your David's Army Verification Code",
       html: `
