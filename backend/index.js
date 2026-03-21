@@ -1,30 +1,24 @@
-require("dotenv").config();
-const express = require("express");
-const nodemailer = require("nodemailer");
+require('dotenv').config();
+const express = require('express');
+const nodemailer = require('nodemailer');
 
 const app = express();
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Davids Army Backend Running");
-});
-
 // POST /send-verification
-app.post("/send-verification", async (req, res) => {
+app.post('/send-verification', async (req, res) => {
   try {
-    const { email, uid } = req.body;
-    if (!email || !uid)
-      return res.status(400).json({ error: "Email and UID required" });
-
-    // Generate 6-digit verification code
-    const code = Math.floor(100000 + Math.random() * 900000);
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
 
     // Create Ethereal test account
     const testAccount = await nodemailer.createTestAccount();
 
     // Create transporter
     const transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
+      host: 'smtp.ethereal.email',
       port: 587,
       auth: {
         user: testAccount.user,
@@ -32,27 +26,31 @@ app.post("/send-verification", async (req, res) => {
       },
     });
 
+    // Generate a simple verification code
+    const code = Math.floor(100000 + Math.random() * 900000);
+
     // Email options
     const mailOptions = {
-      from: '"Davids Army" <no-reply@example.com>',
+      from: '"David\'s Army" <no-reply@davidsarmy.com>',
       to: email,
-      subject: "Your Verification Code",
-      text: `Your verification code is ${code}. It expires in 10 minutes.`,
+      subject: 'Your Verification Code',
+      text: `Your verification code is: ${code}`,
     };
 
-    // Send email
+    // Send mail
     const info = await transporter.sendMail(mailOptions);
 
-    console.log("Ethereal preview URL:", nodemailer.getTestMessageUrl(info));
+    console.log('Message sent: %s', info.messageId);
+    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
     res.json({
-      success: true,
-      code,
-      previewURL: nodemailer.getTestMessageUrl(info), // link to view email
+      message: 'Verification code sent',
+      preview: nodemailer.getTestMessageUrl(info), // URL you can open in browser
+      code, // for testing
     });
   } catch (err) {
-    console.error("Error sending verification code:", err);
-    res.status(500).json({ error: "Failed to send code" });
+    console.error('Error sending verification code:', err);
+    res.status(500).json({ error: err.message || 'Failed to send code' });
   }
 });
 
