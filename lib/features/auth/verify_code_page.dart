@@ -47,7 +47,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
+                  const Text(
                     "Enter the 6-digit verification code sent to",
                     textAlign: TextAlign.center,
                   ),
@@ -115,7 +115,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
     );
   }
 
-  /// ✅ VERIFY WITH BACKEND
+  /// ✅ FIXED VERIFY FLOW
   void _verifyCode() async {
     final email = auth.currentUser?.email;
     if (email == null) return;
@@ -127,20 +127,38 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
       codeController.text.trim(),
     );
 
+    if (!mounted) return;
+
+    if (!success) {
+      setState(() => verifying = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Invalid or expired code")));
+      return;
+    }
+
+    // 🔥 WAIT FOR BACKEND TO SYNC
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // 🔥 RE-CHECK VERIFICATION
+    final verified = await BackendService.isEmailVerified(email);
+
     setState(() => verifying = false);
 
     if (!mounted) return;
 
-    if (success) {
+    if (verified) {
       context.go('/');
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Invalid or expired code")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Verification successful, syncing... try again"),
+        ),
+      );
     }
   }
 
-  /// ✅ RESEND FROM BACKEND
+  /// RESEND CODE
   void _resendCode() async {
     final email = auth.currentUser?.email;
     if (email == null) return;

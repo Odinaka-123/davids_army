@@ -53,22 +53,21 @@ class AppRouter {
         return '/auth';
       }
 
-      // ✅ LOGGED IN → CHECK BACKEND VERIFICATION
       if (user != null) {
         final email = user.email;
-
-        // Safety check
         if (email == null) return '/auth';
 
-        final verified = await BackendService.isEmailVerified(email);
+        // 🔥 ONLY CHECK WHEN NECESSARY
+        if (!goingToVerify && !goingToAuth) {
+          final verified = await BackendService.isEmailVerified(email);
 
-        // ❌ NOT VERIFIED
-        if (!verified && !goingToVerify && !goingToAuth) {
-          return '/verify-code';
+          if (!verified) {
+            return '/verify-code';
+          }
         }
 
-        // ✅ VERIFIED → BLOCK AUTH PAGE
-        if (verified && goingToAuth) {
+        // ✅ BLOCK AUTH PAGE IF LOGGED IN
+        if (goingToAuth) {
           return '/';
         }
       }
