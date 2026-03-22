@@ -33,43 +33,31 @@ app.get("/", (req, res) => {
 
 
 // ✅ SEND VERIFICATION CODE
-app.post("/send-verification", async (req, res) => {
-  try {
-    const { email } = req.body;
+app.post("/verify-code", (req, res) => {
+  const { email, code } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ error: "Email is required" });
-    }
+  console.log("VERIFY REQUEST:", email, code); // 👈 ADD THIS
 
-    const existing = verificationCodes[email];
-    if (existing && Date.now() < existing.expiresAt) {
-      return res.json({
-        message: "Verification code already sent. Check your email.",
-      });
-    }
+  const stored = verificationCodes[email];
 
-    const code = Math.floor(100000 + Math.random() * 900000);
+  if (!stored) {
+    console.log("NO CODE FOUND");
+    return res.status(400).json({ error: "No verification code found" });
+  }
 
-    verificationCodes[email] = {
-      code,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    };
+  if (stored.code == code) {
+    console.log("CODE MATCHED ✅");
 
-    await resend.emails.send({
-      from: "David's Army <davidsarmy@kakkatech.com>",
-      to: email,
-      subject: "Your David's Army Verification Code",
-      html: `
-        <h2>Verification Code</h2>
-        <h1>${code}</h1>
-        <p>Expires in 5 minutes</p>
-      `,
-    });
+    verifiedUsers[email] = true;
 
-    res.json({ message: "Verification email sent" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to send email" });
+    console.log("VERIFIED USERS:", verifiedUsers); // 👈 ADD THIS
+
+    delete verificationCodes[email];
+
+    return res.json({ success: true });
+  } else {
+    console.log("INVALID CODE ❌");
+    return res.status(400).json({ error: "Invalid code" });
   }
 });
 
@@ -110,15 +98,13 @@ app.post("/verify-code", (req, res) => {
 app.post("/check-verification", (req, res) => {
   const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ verified: false });
-  }
+  console.log("CHECK REQUEST:", email); // 👈 ADD
+
+  console.log("VERIFIED USERS STATE:", verifiedUsers); // 👈 ADD
 
   const isVerified = verifiedUsers[email] === true;
 
-  return res.json({
-    verified: isVerified,
-  });
+  res.json({ verified: isVerified });
 });
 
 
