@@ -13,10 +13,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // 🔥 STORE VERIFICATION CODES
 const verificationCodes = {};
 
-// 🔥 STORE VERIFIED USERS (VERY IMPORTANT)
+// 🔥 STORE VERIFIED USERS
 const verifiedUsers = {};
 
-// Clean expired codes every 10 minutes
+// Clean expired codes
 setInterval(() => {
   const now = Date.now();
   for (const email in verificationCodes) {
@@ -26,54 +26,64 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-// Root route
+// Root
 app.get("/", (req, res) => {
-  res.send("David's Army Backend is online!");
+  res.send("Backend is running");
 });
 
 
-// ✅ SEND VERIFICATION CODE
-app.post("/verify-code", (req, res) => {
-  const { email, code } = req.body;
+// ✅ SEND VERIFICATION EMAIL (RESTORED)
+app.post("/send-verification", async (req, res) => {
+  try {
+    const email = req.body.email?.trim().toLowerCase();
 
-  console.log("VERIFY REQUEST:", email, code); // 👈 ADD THIS
+    console.log("SEND VERIFICATION:", email);
 
-  const stored = verificationCodes[email];
+    if (!email) {
+      return res.status(400).json({ error: "Email required" });
+    }
 
-  if (!stored) {
-    console.log("NO CODE FOUND");
-    return res.status(400).json({ error: "No verification code found" });
-  }
+    const code = Math.floor(100000 + Math.random() * 900000);
 
-  if (stored.code == code) {
-    console.log("CODE MATCHED ✅");
+    verificationCodes[email] = {
+      code,
+      expiresAt: Date.now() + 5 * 60 * 1000,
+    };
 
-    verifiedUsers[email] = true;
+    console.log("CODE:", code);
 
-    console.log("VERIFIED USERS:", verifiedUsers); // 👈 ADD THIS
+    await resend.emails.send({
+      from: "onboarding@resend.dev", // ✅ SAFE DEFAULT
+      to: email,
+      subject: "Your Verification Code",
+      html: `<h1>${code}</h1><p>Expires in 5 minutes</p>`,
+    });
 
-    delete verificationCodes[email];
+    console.log("EMAIL SENT ✅");
 
-    return res.json({ success: true });
-  } else {
-    console.log("INVALID CODE ❌");
-    return res.status(400).json({ error: "Invalid code" });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("EMAIL ERROR:", err);
+    res.status(500).json({ error: "Failed to send email" });
   }
 });
 
 
-// ✅ VERIFY CODE (FIXED)
+// ✅ VERIFY CODE (ONLY ONE VERSION)
 app.post("/verify-code", (req, res) => {
-  const { email, code } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
+  const code = req.body.code;
+
+  console.log("VERIFY:", email, code);
 
   if (!email || !code) {
-    return res.status(400).json({ error: "Email and code are required" });
+    return res.status(400).json({ error: "Missing fields" });
   }
 
   const stored = verificationCodes[email];
 
   if (!stored) {
-    return res.status(400).json({ error: "No verification code found" });
+    return res.status(400).json({ error: "No code found" });
   }
 
   if (Date.now() > stored.expiresAt) {
@@ -82,29 +92,28 @@ app.post("/verify-code", (req, res) => {
   }
 
   if (stored.code == code) {
+    verifiedUsers[email] = true;
     delete verificationCodes[email];
 
-    // 🔥🔥🔥 THIS IS THE MOST IMPORTANT FIX
-    verifiedUsers[email] = true;
+    console.log("VERIFIED USERS:", verifiedUsers);
 
     return res.json({ success: true });
-  } else {
-    return res.status(400).json({ error: "Invalid code" });
   }
+
+  return res.status(400).json({ error: "Invalid code" });
 });
 
 
-// ✅ CHECK VERIFICATION (NEW ROUTE)
+// ✅ CHECK VERIFICATION
 app.post("/check-verification", (req, res) => {
-  const { email } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
 
-  console.log("CHECK REQUEST:", email); // 👈 ADD
+  console.log("CHECK:", email);
+  console.log("STATE:", verifiedUsers);
 
-  console.log("VERIFIED USERS STATE:", verifiedUsers); // 👈 ADD
-
-  const isVerified = verifiedUsers[email] === true;
-
-  res.json({ verified: isVerified });
+  res.json({
+    verified: verifiedUsers[email] === true,
+  });
 });
 
 

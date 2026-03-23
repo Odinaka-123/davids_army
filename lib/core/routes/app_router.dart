@@ -48,28 +48,30 @@ class AppRouter {
       final goingToAuth = path == '/auth';
       final goingToVerify = path == '/verify-code';
 
-      // 🚫 NOT LOGGED IN
-      if (user == null && !goingToAuth) {
+      // 🚫 NOT LOGGED IN → always go to auth
+      if (user == null) {
+        return goingToAuth ? null : '/auth';
+      }
+
+      // 🔐 USER EXISTS → CHECK EMAIL
+      final email = user.email;
+      if (email == null) {
+        await authService.signOut();
         return '/auth';
       }
 
-      if (user != null) {
-        final email = user.email;
-        if (email == null) return '/auth';
+      // 🔥 CHECK VERIFICATION STATUS
+      final verified = await BackendService.isEmailVerified(email);
 
-        // 🔥 ONLY CHECK WHEN NECESSARY
-        if (!goingToVerify && !goingToAuth) {
-          final verified = await BackendService.isEmailVerified(email);
+      // ❌ NOT VERIFIED → ONLY allow verify page
+      if (!verified) {
+        await authService.signOut();
+        return '/auth';
+      }
 
-          if (!verified) {
-            return '/verify-code';
-          }
-        }
-
-        // ✅ BLOCK AUTH PAGE IF LOGGED IN
-        if (goingToAuth) {
-          return '/';
-        }
+      // ✅ VERIFIED → block auth + verify pages
+      if (verified && (goingToAuth || goingToVerify)) {
+        return '/';
       }
 
       return null;
