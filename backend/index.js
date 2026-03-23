@@ -3,6 +3,16 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { Resend } = require("resend");
+const admin = require("firebase-admin");
+
+// 🔥 FIREBASE INIT
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const db = admin.firestore();
 
 const app = express();
 app.use(express.json());
@@ -10,11 +20,8 @@ app.use(cors());
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// 🔥 STORE VERIFICATION CODES
+// 🔥 TEMP CODE STORAGE (OK)
 const verificationCodes = {};
-
-// 🔥 STORE VERIFIED USERS
-const verifiedUsers = {};
 
 // Clean expired codes
 setInterval(() => {
@@ -32,12 +39,10 @@ app.get("/", (req, res) => {
 });
 
 
-// ✅ SEND VERIFICATION EMAIL (RESTORED)
+// ✅ SEND VERIFICATION EMAIL
 app.post("/send-verification", async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
-
-    console.log("SEND VERIFICATION:", email);
 
     if (!email) {
       return res.status(400).json({ error: "Email required" });
@@ -53,7 +58,7 @@ app.post("/send-verification", async (req, res) => {
     console.log("CODE:", code);
 
     await resend.emails.send({
-      from: "David's Army <davisdsarmy@kakkatech.com>", 
+      from: "David's Army <davidsarmy@kakkatech.com>", // ✅ FIXED
       to: email,
       subject: "Your Verification Code",
       html: `<h1>${code}</h1><p>Expires in 5 minutes</p>`,
@@ -69,12 +74,10 @@ app.post("/send-verification", async (req, res) => {
 });
 
 
-// ✅ VERIFY CODE (ONLY ONE VERSION)
-app.post("/verify-code", (req, res) => {
+// ✅ VERIFY CODE → SAVE TO FIRESTORE
+app.post("/verify-code", async (req, res) => {
   const email = req.body.email?.trim().toLowerCase();
   const code = req.body.code;
-
-  console.log("VERIFY:", email, code);
 
   if (!email || !code) {
     return res.status(400).json({ error: "Missing fields" });
@@ -92,10 +95,16 @@ app.post("/verify-code", (req, res) => {
   }
 
   if (stored.code == code) {
-    verifiedUsers[email] = true;
     delete verificationCodes[email];
 
-    console.log("VERIFIED USERS:", verifiedUsers);
+    // 🔥 SAVE TO FIRESTORE (THIS IS THE KEY FIX)
+    await db.collection("verified_users").doc(email).set({
+      email,
+      verified: true,
+      verifiedAt: new Date(),
+    });
+
+    console.log("USER VERIFIED + SAVED:", email);
 
     return res.json({ success: true });
   }
@@ -104,16 +113,21 @@ app.post("/verify-code", (req, res) => {
 });
 
 
-// ✅ CHECK VERIFICATION
-app.post("/check-verification", (req, res) => {
+// ✅ CHECK VERIFICATION FROM FIRESTORE
+app.post("/check-verification", async (req, res) => {
   const email = req.body.email?.trim().toLowerCase();
 
-  console.log("CHECK:", email);
-  console.log("STATE:", verifiedUsers);
+  if (!email) {
+    return res.status(400).json({ error: "Email required" });
+  }
 
-  res.json({
-    verified: verifiedUsers[email] === true,
-  });
+  const doc = await db.collection("verified_users").doc(email).get();
+
+  const isVerified = doc.exists && doc.data().verified === true;
+
+  console.log("CHECK:", email, "→", isVerified);
+
+  res.json({ verified: isVerified });
 });
 
 
