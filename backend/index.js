@@ -53,7 +53,7 @@ app.post("/send-verification", async (req, res) => {
     console.log("CODE:", code);
 
     await resend.emails.send({
-      from: "onboarding@resend.dev", // ✅ SAFE DEFAULT
+      from: "David's Army <davisdsarmy@kakkatech.com>", 
       to: email,
       subject: "Your Verification Code",
       html: `<h1>${code}</h1><p>Expires in 5 minutes</p>`,

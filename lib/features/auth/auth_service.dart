@@ -31,8 +31,12 @@ class AuthService {
         phone: phone,
       );
 
-      // 🔥 SEND EMAIL VIA BACKEND
-      await BackendService.sendVerificationEmail(email);
+      // 🔥 CHECK EMAIL SEND SUCCESS
+      final sent = await BackendService.sendVerificationEmail(email);
+
+      if (!sent) {
+        throw Exception("Failed to send verification email");
+      }
     }
 
     return user;

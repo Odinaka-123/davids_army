@@ -23,6 +23,7 @@ class _AuthPageState extends State<AuthPage> {
   bool hidePassword = true;
   bool hideConfirmPassword = true;
   bool isLogin = true;
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -33,14 +34,6 @@ class _AuthPageState extends State<AuthPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (isLogin)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Image.asset(
-                    'assets/icons/shield_icon.png',
-                    height: 36,
-                  ),
-                ),
               const SizedBox(height: 24),
 
               Text(
@@ -50,115 +43,78 @@ class _AuthPageState extends State<AuthPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               const SizedBox(height: 4),
+
               Text(
                 isLogin
                     ? "Welcome back, Sign in to your account"
                     : "Create a new account",
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
+
               const SizedBox(height: 24),
 
               if (!isLogin) ...[
                 TextField(
                   controller: firstNameController,
-                  decoration: InputDecoration(
-                    hintText: "First Name",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  decoration: _input("First Name"),
                 ),
                 const SizedBox(height: 16),
 
                 TextField(
                   controller: lastNameController,
-                  decoration: InputDecoration(
-                    hintText: "Last Name",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  decoration: _input("Last Name"),
                 ),
                 const SizedBox(height: 16),
 
                 TextField(
                   controller: phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    hintText: "Phone Number",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  decoration: _input("Phone Number"),
                 ),
                 const SizedBox(height: 16),
               ],
 
               TextField(
                 controller: emailController,
-                decoration: InputDecoration(
-                  hintText: "Email",
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+                decoration: _input("Email", icon: Icons.email_outlined),
               ),
+
               const SizedBox(height: 16),
 
               TextField(
                 controller: passwordController,
                 obscureText: hidePassword,
-                decoration: InputDecoration(
-                  hintText: "Password",
-                  suffixIcon: IconButton(
+                decoration: _input(
+                  "Password",
+                  suffix: IconButton(
                     icon: Icon(
                       hidePassword ? Icons.visibility_off : Icons.visibility,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        hidePassword = !hidePassword;
-                      });
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    onPressed: () =>
+                        setState(() => hidePassword = !hidePassword),
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
 
               if (!isLogin)
                 TextField(
                   controller: confirmPasswordController,
                   obscureText: hideConfirmPassword,
-                  decoration: InputDecoration(
-                    hintText: "Confirm Password",
-                    suffixIcon: IconButton(
+                  decoration: _input(
+                    "Confirm Password",
+                    suffix: IconButton(
                       icon: Icon(
                         hideConfirmPassword
                             ? Icons.visibility_off
                             : Icons.visibility,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          hideConfirmPassword = !hideConfirmPassword;
-                        });
-                      },
+                      onPressed: () => setState(
+                        () => hideConfirmPassword = !hideConfirmPassword,
+                      ),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-
-              if (isLogin)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text("Forgot Password?"),
                   ),
                 ),
 
@@ -168,8 +124,10 @@ class _AuthPageState extends State<AuthPage> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _handleEmailAuth,
-                  child: Text(isLogin ? "Sign In" : "Sign Up"),
+                  onPressed: loading ? null : _handleEmailAuth,
+                  child: loading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(isLogin ? "Sign In" : "Sign Up"),
                 ),
               ),
 
@@ -195,14 +153,6 @@ class _AuthPageState extends State<AuthPage> {
                       onPressed: _handleGoogleSignIn,
                       icon: const FaIcon(FontAwesomeIcons.google),
                       label: const Text("Google"),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.apple),
-                      label: const Text("Apple"),
                     ),
                   ),
                 ],
@@ -231,43 +181,41 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  // 🔥 FIXED AUTH FLOW
+  InputDecoration _input(String hint, {IconData? icon, Widget? suffix}) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: icon != null ? Icon(icon) : null,
+      suffixIcon: suffix,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+
+  /// 🔥 FINAL AUTH FLOW
   void _handleEmailAuth() async {
     final email = emailController.text.trim();
     final pass = passwordController.text.trim();
 
-    if (isLogin) {
-      try {
+    setState(() => loading = true);
+
+    try {
+      if (isLogin) {
         final user = await auth.signInEmail(email, pass);
 
         if (!mounted) return;
+        setState(() => loading = false);
 
-        if (user != null) {
-          context.go('/');
+        if (user != null) context.go('/');
+      } else {
+        final confirm = confirmPasswordController.text.trim();
+
+        if (pass != confirm) {
+          setState(() => loading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Passwords do not match")),
+          );
+          return;
         }
-      } catch (e) {
-        if (!mounted) return;
 
-        // 🔥 If not verified → send to verify page
-        if (e.toString().contains("not verified")) {
-          context.go('/verify-code');
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(e.toString())));
-        }
-      }
-    } else {
-      final confirm = confirmPasswordController.text.trim();
-
-      if (pass != confirm) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Passwords do not match")));
-        return;
-      }
-
-      try {
         final user = await auth.signUpEmail(
           email: email,
           password: pass,
@@ -277,17 +225,19 @@ class _AuthPageState extends State<AuthPage> {
         );
 
         if (!mounted) return;
+        setState(() => loading = false);
 
         if (user != null) {
           context.go('/verify-code');
         }
-      } catch (e) {
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => loading = false);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -297,19 +247,9 @@ class _AuthPageState extends State<AuthPage> {
 
       if (!mounted) return;
 
-      if (user == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Google sign-in failed")));
-        return;
-      }
-
-      context.go('/');
+      if (user != null) context.go('/');
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Google Sign-In Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 }
