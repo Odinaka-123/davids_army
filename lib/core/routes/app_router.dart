@@ -14,8 +14,14 @@ class AppRouter {
     initialLocation: '/auth',
 
     routes: [
+      // 🔓 AUTH ROUTES (NO SHELL)
       GoRoute(path: '/auth', builder: (context, state) => const AuthPage()),
+      GoRoute(
+        path: '/verify-code',
+        builder: (context, state) => const VerifyCodePage(),
+      ),
 
+      // 🔐 APP ROUTES (WITH SHELL)
       ShellRoute(
         builder: (context, state, child) => HomeShell(child: child),
         routes: [
@@ -31,10 +37,6 @@ class AppRouter {
           GoRoute(
             path: '/edit-profile',
             builder: (context, state) => const EditProfilePage(),
-          ),
-          GoRoute(
-            path: '/verify-code',
-            builder: (context, state) => const VerifyCodePage(),
           ),
         ],
       ),
@@ -61,13 +63,12 @@ class AppRouter {
 
       final verified = await BackendService.isEmailVerified(email);
 
-      // ❌ NOT VERIFIED → MUST GO TO VERIFY PAGE
+      // ❌ NOT VERIFIED → FORCE VERIFY PAGE
       if (!verified) {
-        if (goingToVerify) return null; // ✅ allow verify page
-        return '/verify-code'; // 🔥 redirect there
+        return goingToVerify ? null : '/verify-code';
       }
 
-      // ✅ VERIFIED → block auth + verify pages
+      // ✅ VERIFIED → BLOCK AUTH + VERIFY
       if (verified && (goingToAuth || goingToVerify)) {
         return '/';
       }

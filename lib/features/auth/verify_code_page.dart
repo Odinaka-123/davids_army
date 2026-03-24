@@ -12,14 +12,20 @@ class VerifyCodePage extends StatefulWidget {
 
 class _VerifyCodePageState extends State<VerifyCodePage> {
   final auth = AuthService();
-  final codeController = TextEditingController();
+
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
 
   bool verifying = false;
   bool sendingCode = false;
 
+  String get code => _controllers.map((c) => c.text).join();
+
   @override
   Widget build(BuildContext context) {
-    final email = auth.currentUser?.email ?? "<your email>";
+    final email = auth.currentUser?.email ?? "";
 
     return PopScope(
       canPop: false,
@@ -27,54 +33,79 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
         context.go('/auth');
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Verify Your Email"),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/auth'),
-          ),
-        ),
-        body: Center(
-          child: Card(
-            elevation: 4,
-            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+        body: SafeArea(
+          child: Center(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Enter the 6-digit verification code sent to",
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    email,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  const Icon(Icons.verified_user, size: 80),
                   const SizedBox(height: 24),
 
-                  TextField(
-                    controller: codeController,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      hintText: "Enter code",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+                  const Text(
+                    "Verify Your Email",
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    "Enter the 6-digit code sent to",
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    email,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // 🔥 OTP INPUT
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(6, (index) {
+                      return SizedBox(
+                        width: 45,
+                        child: TextField(
+                          controller: _controllers[index],
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          maxLength: 1,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          decoration: InputDecoration(
+                            counterText: "",
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onChanged: (value) {
+                            if (value.isNotEmpty && index < 5) {
+                              FocusScope.of(context).nextFocus();
+                            }
+                            if (value.isEmpty && index > 0) {
+                              FocusScope.of(context).previousFocus();
+                            }
+
+                            // 🔥 AUTO SUBMIT
+                            if (code.length == 6) {
+                              _verifyCode();
+                            }
+                          },
+                        ),
+                      );
+                    }),
+                  ),
+
+                  const SizedBox(height: 24),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,11 +131,20 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
 
                   const SizedBox(height: 24),
 
-                  ElevatedButton(
-                    onPressed: verifying ? null : _verifyCode,
-                    child: verifying
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Verify"),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: verifying ? null : _verifyCode,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: verifying
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text("Verify"),
+                    ),
                   ),
                 ],
               ),
@@ -115,17 +155,16 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
     );
   }
 
-  /// ✅ FIXED VERIFY FLOW
+  /// VERIFY CODE
   void _verifyCode() async {
     final email = auth.currentUser?.email;
     if (email == null) return;
 
+    if (code.length < 6) return;
+
     setState(() => verifying = true);
 
-    final success = await BackendService.verifyCode(
-      email,
-      codeController.text.trim(),
-    );
+    final success = await BackendService.verifyCode(email, code);
 
     if (!mounted) return;
 
@@ -137,10 +176,8 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
       return;
     }
 
-    // 🔥 WAIT FOR BACKEND TO SYNC
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // 🔥 RE-CHECK VERIFICATION
     final verified = await BackendService.isEmailVerified(email);
 
     setState(() => verifying = false);
@@ -158,7 +195,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
     }
   }
 
-  /// RESEND CODE
+  /// RESEND
   void _resendCode() async {
     final email = auth.currentUser?.email;
     if (email == null) return;
