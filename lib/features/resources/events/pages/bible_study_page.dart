@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class CampDavidPage extends StatelessWidget {
-  const CampDavidPage({super.key});
+class BibleStudyPage extends StatelessWidget {
+  const BibleStudyPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,18 +15,18 @@ class CampDavidPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Camp David",
+          "Bible Study",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 100),
+        padding: const EdgeInsets.only(bottom: 100), // 👈 ADD THIS
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// HERO IMAGE
+            /// 📸 HERO IMAGE
             Image.asset(
-              "assets/images/campdavid.jpg",
+              "assets/images/bible_study.png",
               width: double.infinity,
               height: 220,
               fit: BoxFit.cover,
@@ -42,7 +42,7 @@ class CampDavidPage extends StatelessWidget {
                 children: [
                   /// TITLE
                   const Text(
-                    "Camp David",
+                    "Bible Study",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
                   ),
 
@@ -53,10 +53,7 @@ class CampDavidPage extends StatelessWidget {
                     children: const [
                       Icon(Icons.calendar_month, size: 20),
                       SizedBox(width: 8),
-                      Text(
-                        "We'll let you know soon",
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      Text("Every Wednesday", style: TextStyle(fontSize: 16)),
                     ],
                   ),
 
@@ -67,24 +64,21 @@ class CampDavidPage extends StatelessWidget {
                     children: const [
                       Icon(Icons.access_time, size: 20),
                       SizedBox(width: 8),
-                      Text(
-                        "We'll let you know soon",
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      Text("6:00 PM", style: TextStyle(fontSize: 16)),
                     ],
                   ),
 
                   const SizedBox(height: 8),
 
-                  /// THEME
+                  /// LOCATION / FORMAT
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Icon(Icons.book_outlined, size: 20),
+                      Icon(Icons.location_on_outlined, size: 20),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          "Theme: We'll let you know soon",
+                          "Church Auditorium & Online",
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -95,14 +89,14 @@ class CampDavidPage extends StatelessWidget {
 
                   /// DESCRIPTION
                   const Text(
-                    "Camp David is a summer camp designed especially for teenagers. "
-                    "It is a safe and inspiring environment where young people are encouraged "
-                    "to discover who they truly are, build meaningful friendships, and develop "
-                    "a stronger spiritual connection with God.\n\n"
-                    "Through engaging activities, guided discussions, worship, and moments of reflection, "
-                    "Camp David helps teenagers grow in confidence, character, and faith. "
-                    "It is more than just a camp — it’s a life-shaping experience that empowers teens "
-                    "to live with purpose and stand strong in their identity.",
+                    "Join us for a powerful time of studying God’s Word together. "
+                    "Our Bible Study sessions are designed to help you grow deeper "
+                    "in your understanding of scripture, strengthen your faith, "
+                    "and apply biblical principles to your everyday life.\n\n"
+                    "Through teaching, discussion, and reflection, you’ll gain clarity, "
+                    "wisdom, and spiritual insight in a welcoming and engaging environment. "
+                    "Whether you're new to the faith or looking to go deeper, "
+                    "there’s something here for you.",
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.6,
@@ -112,13 +106,13 @@ class CampDavidPage extends StatelessWidget {
 
                   const SizedBox(height: 32),
 
-                  /// REGISTER BUTTON
+                  /// JOIN BUTTON
                   SizedBox(
                     width: double.infinity,
                     height: 52,
                     child: OutlinedButton(
                       onPressed: () {
-                        // TODO: Registration flow
+                        // TODO: Add join link / Zoom / directions
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.orange),
@@ -127,7 +121,7 @@ class CampDavidPage extends StatelessWidget {
                         ),
                       ),
                       child: const Text(
-                        "REGISTER",
+                        "JOIN SESSION",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,

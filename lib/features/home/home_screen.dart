@@ -13,16 +13,19 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              HomeHeader(),
-              SizedBox(height: 16),
-              FeaturedSection(),
-              SizedBox(height: 32),
-              UpcomingEventsSection(),
-              SizedBox(height: 32),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                HomeHeader(),
+                SizedBox(height: 16),
+                FeaturedSection(),
+                SizedBox(height: 32),
+                UpcomingEventsSection(),
+                SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),

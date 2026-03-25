@@ -12,7 +12,7 @@ class HomeShell extends StatelessWidget {
     final location = GoRouterState.of(context).uri.toString();
 
     if (location.startsWith('/sermons')) return 2;
-    if (location.startsWith('/events')) return 3;
+    if (location.startsWith('/give')) return 3;
     if (location.startsWith('/profile')) return 4;
     if (location.startsWith('/directory')) return 1;
     return 0;
@@ -30,7 +30,7 @@ class HomeShell extends StatelessWidget {
         context.go('/sermons');
         break;
       case 3:
-        context.go('/events');
+        context.go('/give');
         break;
       case 4:
         context.go('/profile');
@@ -96,8 +96,8 @@ class HomeShell extends StatelessWidget {
                       context: context,
                     ),
                     _buildNavItem(
-                      icon: Iconsax.calendar,
-                      selectedIcon: Iconsax.calendar_1,
+                      icon: Iconsax.money_send,
+                      selectedIcon: Iconsax.money_send,
                       index: 3,
                       currentIndex: currentIndex,
                       context: context,

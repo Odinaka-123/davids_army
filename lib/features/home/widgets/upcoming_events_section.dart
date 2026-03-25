@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'upcoming_event_card.dart';
 import 'package:davids_army/features/resources/events/pages/camp_david_page.dart';
+import 'package:davids_army/features/resources/events/pages/bible_study_page.dart';
 
 class UpcomingEventsSection extends StatelessWidget {
   const UpcomingEventsSection({super.key});
@@ -25,6 +26,17 @@ class UpcomingEventsSection extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CampDavidPage()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          UpcomingEventCard(
+            title: "Bible Study",
+            imagePath: "assets/images/bible_study.png",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const BibleStudyPage()),
               );
             },
           ),

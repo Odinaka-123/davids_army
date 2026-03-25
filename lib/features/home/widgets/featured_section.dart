@@ -49,7 +49,7 @@ class FeaturedSection extends StatelessWidget {
                       subtitle: "Let's Pray Together",
                       imagePath: "assets/images/prayer.jpg",
                       height: 124,
-                      onTap: () {},
+                      onTap: () => context.push('/prayer'),
                     ),
                     const SizedBox(height: 12),
                     FeaturedCard(
