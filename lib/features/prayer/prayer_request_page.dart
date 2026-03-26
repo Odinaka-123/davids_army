@@ -41,7 +41,7 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
       _nameController.clear();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Your prayer has been received 🙏")),
+        const SnackBar(content: Text("Your prayer has been received ✅")),
       );
     } catch (e) {
       ScaffoldMessenger.of(
@@ -66,7 +66,6 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
 
             const SizedBox(height: 24),
 
-            /// 🙏 Intro
             Text(
               "We’re here to pray with you.",
               style: Theme.of(context).textTheme.titleLarge,
@@ -79,7 +78,6 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
 
             const SizedBox(height: 24),
 
-            /// ✍️ Prayer Input
             TextField(
               controller: _prayerController,
               maxLines: 6,
@@ -96,7 +94,6 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
 
             const SizedBox(height: 20),
 
-            /// 👤 Name (optional)
             if (!isAnonymous)
               TextField(
                 controller: _nameController,
@@ -113,7 +110,6 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
 
             const SizedBox(height: 12),
 
-            /// 🔒 Anonymous toggle
             Row(
               children: [
                 Switch(
@@ -129,18 +125,13 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
 
             const SizedBox(height: 30),
 
-            /// 🚀 Submit button
             SizedBox(
               height: 55,
               child: ElevatedButton(
                 onPressed: isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primary, // 🔥 solid
-                  foregroundColor: Theme.of(
-                    context,
-                  ).colorScheme.onPrimary, // 🔥 light text
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
                   ),
@@ -170,7 +161,6 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
     );
   }
 
-  /// 🔙 Top bar
   Widget _topBar(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
