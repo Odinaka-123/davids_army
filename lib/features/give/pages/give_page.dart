@@ -39,7 +39,7 @@ class _GivePageState extends State<GivePage>
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
@@ -81,7 +81,7 @@ class _GivePageState extends State<GivePage>
       children: [
         if (canGoBack)
           IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: colors.onBackground),
+            icon: Icon(Icons.arrow_back_ios_new, color: colors.onSurface),
             onPressed: () => context.pop(),
           ),
         if (canGoBack) const SizedBox(width: 4),
@@ -90,7 +90,7 @@ class _GivePageState extends State<GivePage>
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: colors.onBackground,
+            color: colors.onSurface,
           ),
         ),
       ],
@@ -190,7 +190,7 @@ class _GivePageState extends State<GivePage>
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: colors.surfaceVariant,
+        color: colors.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
       ),
       child: const Text(
@@ -213,7 +213,7 @@ class _GivePageState extends State<GivePage>
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: colors.surfaceVariant,
+            color: colors.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
