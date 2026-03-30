@@ -48,7 +48,7 @@ class HomeShell extends StatelessWidget {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: colors.background,
+          backgroundColor: colors.surface,
           extendBody: true, // allows body to extend under system nav bar
           body: child,
           bottomNavigationBar: Padding(

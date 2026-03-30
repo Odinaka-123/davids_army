@@ -57,7 +57,7 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
@@ -84,7 +84,7 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
               decoration: InputDecoration(
                 hintText: "Write your prayer request...",
                 filled: true,
-                fillColor: colors.surfaceVariant,
+                fillColor: colors.surfaceContainerHighest,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
@@ -100,7 +100,7 @@ class _PrayerRequestPageState extends State<PrayerRequestPage> {
                 decoration: InputDecoration(
                   hintText: "Your name (optional)",
                   filled: true,
-                  fillColor: colors.surfaceVariant,
+                  fillColor: colors.surfaceContainerHighest,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
