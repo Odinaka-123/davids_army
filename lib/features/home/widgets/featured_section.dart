@@ -57,7 +57,7 @@ class FeaturedSection extends StatelessWidget {
                       subtitle: "Join Us",
                       imagePath: "assets/images/community.jpg",
                       height: 124,
-                      onTap: () {},
+                      onTap: () => context.push('/connect'),
                     ),
                   ],
                 ),

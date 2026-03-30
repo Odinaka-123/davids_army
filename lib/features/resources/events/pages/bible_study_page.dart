@@ -53,7 +53,7 @@ class BibleStudyPage extends StatelessWidget {
                     children: const [
                       Icon(Icons.calendar_month, size: 20),
                       SizedBox(width: 8),
-                      Text("Every Wednesday", style: TextStyle(fontSize: 16)),
+                      Text("Every Thursday", style: TextStyle(fontSize: 16)),
                     ],
                   ),
 
@@ -64,7 +64,7 @@ class BibleStudyPage extends StatelessWidget {
                     children: const [
                       Icon(Icons.access_time, size: 20),
                       SizedBox(width: 8),
-                      Text("6:00 PM", style: TextStyle(fontSize: 16)),
+                      Text("8:00 PM WAT", style: TextStyle(fontSize: 16)),
                     ],
                   ),
 
@@ -78,7 +78,7 @@ class BibleStudyPage extends StatelessWidget {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          "Church Auditorium & Online",
+                          "Live Whatsapp Call (Link will be shared in the group)",
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
