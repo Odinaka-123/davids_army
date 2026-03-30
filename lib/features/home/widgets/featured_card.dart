@@ -41,7 +41,7 @@ class FeaturedCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withOpacity(0.15),
+                  Colors.black.withValues(alpha: 0.15),
                   Colors.black.withValues(alpha: 0.6),
                 ],
               ),

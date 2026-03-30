@@ -114,7 +114,7 @@ class _GivePageState extends State<GivePage>
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.25),
+            color: Colors.orange.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -149,7 +149,7 @@ class _GivePageState extends State<GivePage>
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.copy, color: Colors.white, size: 18),

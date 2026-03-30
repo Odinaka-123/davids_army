@@ -29,7 +29,8 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         context.go('/auth');
       },
       child: Scaffold(

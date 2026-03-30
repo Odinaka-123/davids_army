@@ -137,7 +137,7 @@ class HomeShell extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected
-              ? colors.primary.withOpacity(0.1)
+              ? colors.primary.withValues(alpha: 0.1)
               : Colors.transparent,
           shape: BoxShape.circle,
         ),
