@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class GetConnectedPage extends StatelessWidget {
   const GetConnectedPage({super.key});
@@ -18,19 +18,23 @@ class GetConnectedPage extends StatelessWidget {
           children: [
             _topBar(context),
 
+            const SizedBox(height: 10),
+
+            /// ✨ SUBTEXT
+            Text(
+              "Stay connected with the family 🤝",
+              style: TextStyle(
+                fontSize: 14,
+                color: colors.onBackground.withOpacity(0.6),
+              ),
+            ),
+
             const SizedBox(height: 24),
 
             /// 💬 COMMUNITY
             _sectionTitle("Join the Community"),
             const SizedBox(height: 12),
             _whatsappCard(context),
-
-            const SizedBox(height: 30),
-
-            /// 🫂 COUNSELLING
-            _sectionTitle("Talk to a Leader"),
-            const SizedBox(height: 12),
-            _counsellingCard(context),
 
             const SizedBox(height: 30),
 
@@ -81,103 +85,84 @@ class GetConnectedPage extends StatelessWidget {
 
   /// 💬 WhatsApp Card
   Widget _whatsappCard(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () async {
+          final url = Uri.parse("https://chat.whatsapp.com/YOUR_LINK");
 
-    return GestureDetector(
-      onTap: () async {
-        final url = Uri.parse("https://chat.whatsapp.com/YOUR_LINK");
-
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            const CircleAvatar(
-              backgroundColor: Colors.green,
-              child: Icon(Icons.chat, color: Colors.white),
-            ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Text(
-                "Join our WhatsApp Community",
-                style: TextStyle(fontWeight: FontWeight.w600),
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url, mode: LaunchMode.externalApplication);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.green.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              const CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.green,
+                child: Icon(Icons.chat, color: Colors.white),
               ),
-            ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: colors.primary),
-          ],
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "WhatsApp Community",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Chat, grow, and stay updated daily",
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios, size: 16),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// 🫂 Counselling Card
-  Widget _counsellingCard(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return GestureDetector(
-      onTap: () {
-        _openCounsellingModal(context);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: colors.primary.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: colors.primary,
-              child: const Icon(Icons.favorite, color: Colors.white),
-            ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Text(
-                "Request Counseling / Talk to a Leader",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: colors.primary),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 🌐 SOCIALS (UPDATED 🔥)
+  /// 🌐 SOCIALS
   Widget _socials(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _socialIcon(
-          icon: Iconsax.instagram,
+          icon: FontAwesomeIcons.instagram,
           label: "Instagram",
-          color: Colors.purple,
-          link: "https://instagram.com/YOUR_PAGE",
+          color: const Color(0xFFE1306C),
+          link: "https://www.instagram.com/davidsarmyalpha/",
         ),
         _socialIcon(
-          icon: Icons.ondemand_video, // ✅ YouTube fallback
+          icon: FontAwesomeIcons.youtube,
           label: "YouTube",
-          color: Colors.red,
-          link: "https://youtube.com/YOUR_CHANNEL",
+          color: const Color(0xFFFF0000),
+          link: "https://www.youtube.com/@giantslayertv8239",
         ),
         _socialIcon(
-          icon: Icons.music_note, // ✅ Spotify fallback
+          icon: FontAwesomeIcons.spotify,
           label: "Spotify",
-          color: Colors.green,
-          link: "https://spotify.com/YOUR_PROFILE",
+          color: const Color(0xFF1DB954),
+          link:
+              "https://open.spotify.com/show/5BmsIEBAwtyrFj2p9TyP1b?si=302e1cf9e4e643fe",
         ),
       ],
     );
   }
 
+  /// 🔘 Social Icon
   Widget _socialIcon({
     required IconData icon,
     required String label,
@@ -193,77 +178,29 @@ class GetConnectedPage extends StatelessWidget {
       },
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(14),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(0.12),
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Icon(icon, color: color, size: 26),
+            child: FaIcon(icon, color: color, size: 26),
           ),
-          const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
-    );
-  }
-
-  /// 🧾 COUNSELLING MODAL
-  void _openCounsellingModal(BuildContext context) {
-    final controller = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            20,
-            16,
-            MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Talk to a Leader",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: controller,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: "Briefly tell us what you'd like to talk about...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Request sent. We'll reach out 🙏"),
-                      ),
-                    );
-                  },
-                  child: const Text("Submit Request"),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
