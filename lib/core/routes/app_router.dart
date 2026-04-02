@@ -11,6 +11,7 @@ import '../services/backend_service.dart';
 import '../../features/give/pages/give_page.dart';
 import '../../features/prayer/prayer_request_page.dart';
 import '../../features/community/get_connected_page.dart';
+import '../../features/notifications/notifications_page.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -49,6 +50,10 @@ class AppRouter {
           GoRoute(
             path: '/connect',
             builder: (context, state) => const GetConnectedPage(),
+          ),
+          GoRoute(
+            path: '/notifications',
+            builder: (context, state) => const NotificationsPage(),
           ),
         ],
       ),

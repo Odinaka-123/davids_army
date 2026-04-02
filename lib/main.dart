@@ -4,11 +4,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'core/routes/app_router.dart';
 import 'core/theme_controller.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/push_notification_service.dart';
+import 'features/notifications/notification_popup.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
+  await PushNotificationService.init();
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
@@ -41,8 +44,16 @@ class DavidsArmyApp extends StatelessWidget {
 
           routerConfig: AppRouter.router,
 
+          // ✅ THIS IS THE CORRECT PLACE
           builder: (context, child) {
-            return Scaffold(extendBody: true, body: child);
+            return Stack(
+              children: [
+                Scaffold(extendBody: true, body: child),
+
+                // 🔥 NOW SAFE (has Directionality)
+                const NotificationPopup(),
+              ],
+            );
           },
         );
       },

@@ -15,6 +15,7 @@ class _NotificationPopupState extends State<NotificationPopup>
   AppNotification? _current;
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
@@ -22,28 +23,31 @@ class _NotificationPopupState extends State<NotificationPopup>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
     );
 
+    // 🔥 Drop from top BUT stop slightly lower (natural feel)
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(1, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+      begin: const Offset(0, -1.2), // start off screen
+      end: const Offset(0, 0), // settle position
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
-    // Listen to notifications
-    NotificationService().addListener(_showLatest);
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    // ✅ ONLY listen for NEW notifications
+    NotificationService().popupStream.addListener(_onNewNotification);
   }
 
-  void _showLatest() {
-    final notifications = NotificationService().notifications;
-    if (notifications.isEmpty) return;
+  void _onNewNotification() async {
+    final notif = NotificationService().popupStream.value;
+    if (notif == null) return;
 
-    setState(() => _current = notifications.first);
+    setState(() => _current = notif);
 
-    _controller.forward();
+    await _controller.forward(from: 0);
 
-    // Auto-dismiss
     Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return;
       await _controller.reverse();
       if (mounted) setState(() => _current = null);
     });
@@ -51,7 +55,7 @@ class _NotificationPopupState extends State<NotificationPopup>
 
   @override
   void dispose() {
-    NotificationService().removeListener(_showLatest);
+    NotificationService().popupStream.removeListener(_onNewNotification);
     _controller.dispose();
     super.dispose();
   }
@@ -61,51 +65,83 @@ class _NotificationPopupState extends State<NotificationPopup>
     if (_current == null) return const SizedBox.shrink();
 
     return Positioned(
-      top: 50,
+      top: 60, // 🔥 THIS makes it drop and stop nicely below status bar
+      left: 16,
       right: 16,
-      child: GestureDetector(
-        onTap: () {
-          final route = _current!.route;
-          if (route.isNotEmpty) {
-            // ✅ Ensure navigation happens on the root context
-            GoRouter.of(context).go(route);
+      child: Dismissible(
+        key: ValueKey(_current),
+        direction: DismissDirection.up,
+        onDismissed: (_) => setState(() => _current = null),
+        child: GestureDetector(
+          onTap: () {
+            final notif = _current!;
+
+            NotificationService().markAsRead(notif);
+
+            if (notif.route.isNotEmpty) {
+              GoRouter.of(context).push(notif.route);
+            }
+
             setState(() => _current = null);
-          }
-        },
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blueAccent,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
+          },
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surface.withOpacity(0.96),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 25,
+                        offset: Offset(0, 12),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _current!.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.notifications_active_rounded,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _current!.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _current!.message,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _current!.message,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

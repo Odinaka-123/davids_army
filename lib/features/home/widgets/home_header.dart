@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:go_router/go_router.dart';
 import '../../settings/settings_page.dart';
+import '../../../core/widgets/notification_bell.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return SafeArea(
       bottom: false,
       child: Container(
@@ -17,7 +17,7 @@ class HomeHeader extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Settings Icon
+            /// ⚙️ Settings
             IconButton.filledTonal(
               onPressed: () {
                 Navigator.push(
@@ -28,31 +28,19 @@ class HomeHeader extends StatelessWidget {
               icon: const Icon(Iconsax.setting_2),
             ),
 
-            // Notification Icon
-            Stack(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Iconsax.notification,
-                    size: 26,
-                    color: colors.onSurface,
-                  ),
+            /// 🔔 Notifications (REAL)
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(30),
+                onTap: () {
+                  context.push('/notifications');
+                },
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: NotificationBell(),
                 ),
-
-                Positioned(
-                  right: 10,
-                  top: 10,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: colors.error,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
