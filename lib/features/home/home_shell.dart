@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:go_router/go_router.dart';
-import '../notifications/notification_popup.dart'; // import your popup
+import '../notifications/notification_popup.dart';
 
 class HomeShell extends StatelessWidget {
   final Widget child;
@@ -11,11 +11,10 @@ class HomeShell extends StatelessWidget {
   int _locationToIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
 
-    if (location.startsWith('/sermons')) return 2;
-    if (location.startsWith('/give')) return 3;
-    if (location.startsWith('/profile')) return 4;
-    if (location.startsWith('/directory')) return 1;
-    return 0;
+    if (location.startsWith('/sermons')) return 1;
+    if (location.startsWith('/give')) return 2;
+    if (location.startsWith('/profile')) return 3;
+    return 0; // home
   }
 
   void _onTap(BuildContext context, int index) {
@@ -24,15 +23,12 @@ class HomeShell extends StatelessWidget {
         context.go('/');
         break;
       case 1:
-        context.go('/directory');
-        break;
-      case 2:
         context.go('/sermons');
         break;
-      case 3:
+      case 2:
         context.go('/give');
         break;
-      case 4:
+      case 3:
         context.go('/profile');
         break;
     }
@@ -42,80 +38,71 @@ class HomeShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentIndex = _locationToIndex(context);
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+    final colors = Theme.of(context).colorScheme;
 
     return Stack(
       children: [
         Scaffold(
           backgroundColor: colors.surface,
-          extendBody: true, // allows body to extend under system nav bar
+          extendBody: true,
           body: child,
+
+          /// 🔥 UPDATED BOTTOM NAV (4 ITEMS ONLY)
           bottomNavigationBar: Padding(
             padding: EdgeInsets.fromLTRB(32, 0, 32, 16 + bottomPadding),
-            child: Material(
-              elevation: 12,
-              borderRadius: BorderRadius.circular(40),
-              color: Colors.transparent,
-              child: Container(
-                height: 70,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(40),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(
-                      icon: Iconsax.home_2,
-                      selectedIcon: Iconsax.home_25,
-                      index: 0,
-                      currentIndex: currentIndex,
-                      context: context,
-                    ),
-                    _buildNavItem(
-                      icon: Iconsax.book,
-                      selectedIcon: Iconsax.book_1,
-                      index: 1,
-                      currentIndex: currentIndex,
-                      context: context,
-                    ),
-                    _buildNavItem(
-                      icon: Iconsax.video,
-                      selectedIcon: Iconsax.video_play,
-                      index: 2,
-                      currentIndex: currentIndex,
-                      context: context,
-                    ),
-                    _buildNavItem(
-                      icon: Iconsax.money_send,
-                      selectedIcon: Iconsax.money_send,
-                      index: 3,
-                      currentIndex: currentIndex,
-                      context: context,
-                    ),
-                    _buildNavItem(
-                      icon: Iconsax.user,
-                      selectedIcon: Iconsax.user_octagon,
-                      index: 4,
-                      currentIndex: currentIndex,
-                      context: context,
-                    ),
-                  ],
-                ),
+            child: Container(
+              height: 70,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: BorderRadius.circular(40),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    icon: Iconsax.home_2,
+                    selectedIcon: Iconsax.home_25,
+                    index: 0,
+                    currentIndex: currentIndex,
+                    context: context,
+                  ),
+                  _buildNavItem(
+                    icon: Iconsax.video,
+                    selectedIcon: Iconsax.video_play,
+                    index: 1,
+                    currentIndex: currentIndex,
+                    context: context,
+                  ),
+                  _buildNavItem(
+                    icon: Iconsax.money_send,
+                    selectedIcon: Iconsax.money_send,
+                    index: 2,
+                    currentIndex: currentIndex,
+                    context: context,
+                  ),
+                  _buildNavItem(
+                    icon: Iconsax.user,
+                    selectedIcon: Iconsax.user_octagon,
+                    index: 3,
+                    currentIndex: currentIndex,
+                    context: context,
+                  ),
+                ],
               ),
             ),
           ),
         ),
-        const NotificationPopup(), // 🔔 added notification popup globally
+
+        /// 🔔 GLOBAL POPUP
+        const NotificationPopup(),
       ],
     );
   }
@@ -137,7 +124,7 @@ class HomeShell extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected
-              ? colors.primary.withValues(alpha: 0.1)
+              ? colors.primary.withOpacity(0.1)
               : Colors.transparent,
           shape: BoxShape.circle,
         ),

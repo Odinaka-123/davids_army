@@ -1,286 +1,461 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  static const Color primaryColor = Color(0xFF01410A);
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser!;
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      backgroundColor: colors.surfaceVariant.withOpacity(0.3),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection("users")
+            .doc(user.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(color: colors.primary),
+            );
+          }
+
+          final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+
+          final first = data["firstName"] ?? "";
+          final last = data["lastName"] ?? "";
+          final email = data["email"] ?? "";
+          final phone = data["phone"] ?? "";
+          final city = data["city"] ?? "";
+          final state = data["state"] ?? "";
+          final country = data["country"] ?? "";
+          final photoBase64 = data["photoBase64"];
+
+          final initials =
+              (first.isNotEmpty ? first[0] : "") +
+              (last.isNotEmpty ? last[0] : "");
+
+          final location = [
+            city,
+            state,
+            country,
+          ].where((s) => s.isNotEmpty).join(", ");
+
+          return CustomScrollView(
+            slivers: [
+              // ── Collapsible header with cover gradient ──────────────
+              SliverAppBar(
+                expandedHeight: 220,
+                pinned: true,
+                backgroundColor: colors.primary,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Cover gradient
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [colors.primary, colors.tertiary],
+                          ),
+                        ),
+                      ),
+                      // Subtle pattern overlay
+                      Opacity(
+                        opacity: 0.08,
+                        child: CustomPaint(painter: _DotPatternPainter()),
+                      ),
+                      // Avatar centred in the lower half
+                      Align(
+                        alignment: const Alignment(0, 0.85),
+                        child: _Avatar(
+                          photoBase64: photoBase64,
+                          initials: initials,
+                          colors: colors,
+                          radius: 48,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    onPressed: () => context.push('/edit-profile'),
+                    icon: const Icon(Icons.edit_outlined),
+                    tooltip: "Edit profile",
+                    style: IconButton.styleFrom(foregroundColor: Colors.white),
+                  ),
+                  const SizedBox(width: 4),
+                ],
+              ),
+
+              // ── Body ────────────────────────────────────────────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    20,
+                    16,
+                    32 +
+                        MediaQuery.of(context).padding.bottom +
+                        kBottomNavigationBarHeight,
+                  ),
+                  child: Column(
+                    children: [
+                      // Name + email + location pill
+                      Text(
+                        "$first $last",
+                        style: textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        email,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurface.withOpacity(0.55),
+                        ),
+                      ),
+                      if (location.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        _LocationChip(location: location, colors: colors),
+                      ],
+
+                      const SizedBox(height: 28),
+
+                      // ── Info card ──────────────────────────────────
+                      _InfoCard(
+                        title: "Personal info",
+                        children: [
+                          _InfoRow(
+                            icon: Icons.person_outline,
+                            label: "First name",
+                            value: first,
+                            colors: colors,
+                          ),
+                          _InfoRow(
+                            icon: Icons.person_outline,
+                            label: "Last name",
+                            value: last,
+                            colors: colors,
+                          ),
+                          _InfoRow(
+                            icon: Icons.email_outlined,
+                            label: "Email",
+                            value: email,
+                            colors: colors,
+                          ),
+                          _InfoRow(
+                            icon: Icons.phone_outlined,
+                            label: "Phone",
+                            value: phone,
+                            colors: colors,
+                            isLast: true,
+                          ),
+                        ],
+                        colors: colors,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _InfoCard(
+                        title: "Location",
+                        children: [
+                          _InfoRow(
+                            icon: Icons.location_city_outlined,
+                            label: "City",
+                            value: city,
+                            colors: colors,
+                          ),
+                          _InfoRow(
+                            icon: Icons.map_outlined,
+                            label: "State",
+                            value: state,
+                            colors: colors,
+                          ),
+                          _InfoRow(
+                            icon: Icons.public_outlined,
+                            label: "Country",
+                            value: country,
+                            colors: colors,
+                            isLast: true,
+                          ),
+                        ],
+                        colors: colors,
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // ── Edit button ────────────────────────────────
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () => context.push('/edit-profile'),
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          label: const Text("Edit profile"),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ── Avatar ────────────────────────────────────────────────────────────────────
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({
+    required this.photoBase64,
+    required this.initials,
+    required this.colors,
+    required this.radius,
+  });
+
+  final String? photoBase64;
+  final String initials;
+  final ColorScheme colors;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
-    final user = FirebaseAuth.instance.currentUser;
-
-    return PopScope(
-      canPop: context.canPop(),
-      onPopInvoked: (didPop) {
-        if (!didPop && !context.canPop()) {
-          context.go('/home');
-        }
-      },
-      child: Scaffold(
-        backgroundColor: colors.background,
-        extendBody: true,
-        body: FutureBuilder<DocumentSnapshot>(
-          future: FirebaseFirestore.instance
-              .collection("users")
-              .doc(user!.uid)
-              .get(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final data = snapshot.data!.data() as Map<String, dynamic>;
-
-            final first = data["firstName"] ?? "";
-            final last = data["lastName"] ?? "";
-            final email = data["email"] ?? "";
-            final photoUrl = data["photoUrl"];
-
-            return SafeArea(
-              bottom: false,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
-                children: [
-                  _topBar(context),
-                  const SizedBox(height: 20),
-
-                  _profileHeader(context, first, last, email, photoUrl),
-
-                  const SizedBox(height: 28),
-
-                  _sectionTitle(context, 'Personal info'),
-                  _infoCard(context, [
-                    _infoRow(
-                      context,
-                      Icons.badge_outlined,
-                      'First name',
-                      first,
-                    ),
-                    _infoRow(context, Icons.badge, 'Last name', last),
-                  ]),
-
-                  const SizedBox(height: 20),
-
-                  _sectionTitle(context, 'Contact'),
-                  _infoCard(context, [
-                    _infoRow(context, Icons.email_outlined, 'Email', email),
-                    _infoRow(
-                      context,
-                      Icons.phone_outlined,
-                      'Phone',
-                      data["phone"] ?? "",
-                    ),
-                  ]),
-
-                  const SizedBox(height: 20),
-
-                  _sectionTitle(context, 'Address'),
-                  _infoCard(context, [
-                    _infoRow(
-                      context,
-                      Icons.location_city_outlined,
-                      'City',
-                      data["city"] ?? "",
-                    ),
-                    _infoRow(
-                      context,
-                      Icons.map_outlined,
-                      'State',
-                      data["state"] ?? "",
-                    ),
-                    _infoRow(
-                      context,
-                      Icons.public_outlined,
-                      'Country',
-                      data["country"] ?? "",
-                    ),
-                  ]),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _topBar(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final canGoBack = context.canPop();
-
-    return Row(
-      children: [
-        if (canGoBack)
-          IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: colors.onBackground),
-            onPressed: () => context.pop(),
-          ),
-        if (canGoBack) const SizedBox(width: 4),
-        Text(
-          'Profile',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: colors.onBackground,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _profileHeader(
-    BuildContext context,
-    String first,
-    String last,
-    String email,
-    String? photoUrl,
-  ) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        _avatar(context, first, last, photoUrl),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "$first $last",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: colors.onBackground,
-                ),
-              ),
-              Text(
-                email,
-                style: TextStyle(fontSize: 13, color: colors.onSurfaceVariant),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: colors.primary),
-                onPressed: () => context.push('/edit-profile'),
-                child: const Text('Edit profile'),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _avatar(
-    BuildContext context,
-    String first,
-    String last,
-    String? photoUrl,
-  ) {
-    final colors = Theme.of(context).colorScheme;
-
-    String initials = "";
-
-    if (first.isNotEmpty) initials += first[0];
-    if (last.isNotEmpty) initials += last[0];
-
-    initials = initials.toUpperCase();
-
-    if (photoUrl != null && photoUrl.isNotEmpty) {
-      return CircleAvatar(radius: 36, backgroundImage: NetworkImage(photoUrl));
-    }
-
-    if (initials.isNotEmpty) {
-      return CircleAvatar(
-        radius: 36,
-        backgroundColor: colors.primaryContainer,
-        child: Text(
-          initials,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: colors.onPrimaryContainer,
-          ),
-        ),
-      );
-    }
-
-    return CircleAvatar(
-      radius: 36,
-      backgroundColor: colors.primaryContainer,
-      child: Icon(Icons.person, size: 36, color: colors.onPrimaryContainer),
-    );
-  }
-
-  Widget _sectionTitle(BuildContext context, String title) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: colors.onSurfaceVariant,
-        ),
-      ),
-    );
-  }
-
-  Widget _infoCard(BuildContext context, List<Widget> rows) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: theme.brightness == Brightness.light
-            ? [
-                BoxShadow(
-                  color: colors.shadow.withOpacity(0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [],
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: Column(
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: colors.primaryContainer,
+        backgroundImage: photoBase64 != null
+            ? MemoryImage(base64Decode(photoBase64!))
+            : null,
+        child: photoBase64 == null
+            ? Text(
+                initials,
+                style: TextStyle(
+                  fontSize: radius * 0.5,
+                  fontWeight: FontWeight.w700,
+                  color: colors.onPrimaryContainer,
+                ),
+              )
+            : null,
+      ),
+    );
+  }
+}
+
+// ── Location chip ─────────────────────────────────────────────────────────────
+
+class _LocationChip extends StatelessWidget {
+  const _LocationChip({required this.location, required this.colors});
+
+  final String location;
+  final ColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: colors.primaryContainer.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          for (int i = 0; i < rows.length; i++) ...[
-            rows[i],
-            if (i != rows.length - 1)
-              Divider(height: 1, color: colors.outlineVariant),
-          ],
+          Icon(Icons.location_on_outlined, size: 14, color: colors.primary),
+          const SizedBox(width: 4),
+          Text(
+            location,
+            style: TextStyle(
+              fontSize: 13,
+              color: colors.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _infoRow(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value,
-  ) {
-    final colors = Theme.of(context).colorScheme;
+// ── Info card ─────────────────────────────────────────────────────────────────
 
-    return ListTile(
-      leading: Icon(icon, color: colors.primary),
-      title: Text(
-        label,
-        style: TextStyle(color: colors.onSurface, fontWeight: FontWeight.w500),
-      ),
-      subtitle: Text(
-        value.isEmpty ? "-" : value,
-        style: TextStyle(color: colors.onSurfaceVariant),
-      ),
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({
+    required this.title,
+    required this.children,
+    required this.colors,
+  });
+
+  final String title;
+  final List<Widget> children;
+  final ColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.1,
+              color: colors.onSurface.withOpacity(0.45),
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow.withOpacity(0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(children: children),
+        ),
+      ],
     );
   }
+}
+
+// ── Info row ──────────────────────────────────────────────────────────────────
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.colors,
+    this.isLast = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final ColorScheme colors;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final isEmpty = value.isEmpty;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          child: Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer.withOpacity(0.45),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, size: 18, color: colors.primary),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: colors.onSurface.withOpacity(0.45),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      isEmpty ? "—" : value,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: isEmpty
+                            ? colors.onSurface.withOpacity(0.3)
+                            : colors.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (!isLast)
+          Divider(
+            height: 1,
+            indent: 62,
+            endIndent: 16,
+            color: colors.outlineVariant.withOpacity(0.5),
+          ),
+      ],
+    );
+  }
+}
+
+// ── Dot pattern painter ───────────────────────────────────────────────────────
+
+class _DotPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    const spacing = 20.0;
+    const radius = 1.5;
+
+    for (double x = 0; x < size.width; x += spacing) {
+      for (double y = 0; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), radius, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DotPatternPainter oldDelegate) => false;
 }

@@ -90,11 +90,9 @@ class GetConnectedPage extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () async {
-          final url = Uri.parse("https://chat.whatsapp.com/YOUR_LINK");
+          final url = Uri.parse("https://chat.whatsapp.com/REAL_LINK");
 
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
-          }
+          await launchUrl(url, mode: LaunchMode.externalApplication);
         },
         child: Container(
           padding: const EdgeInsets.all(18),
@@ -172,9 +170,8 @@ class GetConnectedPage extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         final url = Uri.parse(link);
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        }
+
+        await launchUrl(url, mode: LaunchMode.externalApplication);
       },
       child: Column(
         children: [

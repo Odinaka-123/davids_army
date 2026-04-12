@@ -6,18 +6,23 @@ class CampDavidPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colors.onBackground),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Camp David",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: colors.onBackground,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -42,51 +47,80 @@ class CampDavidPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   /// TITLE
-                  const Text(
+                  Text(
                     "Camp David",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: colors.onBackground,
+                    ),
                   ),
 
                   const SizedBox(height: 16),
 
                   /// DATE
                   Row(
-                    children: const [
-                      Icon(Icons.calendar_month, size: 20),
-                      SizedBox(width: 8),
+                    children: [
+                      Icon(
+                        Icons.calendar_month,
+                        size: 20,
+                        color: colors.onBackground,
+                      ),
+                      const SizedBox(width: 8),
                       Text(
-                        "We'll let you know soon",
-                        style: TextStyle(fontSize: 16),
+                        "29th July – 2nd August",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colors.onBackground,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
                   /// TIME
                   Row(
-                    children: const [
-                      Icon(Icons.access_time, size: 20),
-                      SizedBox(width: 8),
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 20,
+                        color: colors.onBackground,
+                      ),
+                      const SizedBox(width: 8),
                       Text(
-                        "We'll let you know soon",
-                        style: TextStyle(fontSize: 16),
+                        "Full Camp Experience",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colors.onBackground,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
-                  /// THEME
+                  const SizedBox(height: 10),
+
+                  /// SUPPORT CONTACT
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Icon(Icons.book_outlined, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
+                    children: [
+                      Icon(Icons.phone, size: 20, color: colors.onBackground),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () async {
+                          final url = Uri.parse("tel:08172147524");
+                          await launchUrl(url);
+                        },
                         child: Text(
-                          "Theme: We'll let you know soon",
-                          style: TextStyle(fontSize: 16),
+                          "Support: 08172147524",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: colors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -95,7 +129,7 @@ class CampDavidPage extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   /// DESCRIPTION
-                  const Text(
+                  Text(
                     "Camp David is a summer camp designed especially for teenagers. "
                     "It is a safe and inspiring environment where young people are encouraged "
                     "to discover who they truly are, build meaningful friendships, and develop "
@@ -107,7 +141,7 @@ class CampDavidPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.6,
-                      color: Colors.black87,
+                      color: colors.onBackground.withOpacity(0.8),
                     ),
                   ),
 
@@ -121,31 +155,23 @@ class CampDavidPage extends StatelessWidget {
                       onPressed: () async {
                         final url = Uri.parse("https://campdavid.com.ng/");
 
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(
-                            url,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Could not open link"),
-                            ),
-                          );
-                        }
+                        await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication,
+                        );
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.orange),
+                        side: BorderSide(color: colors.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         "REGISTER",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: Colors.orange,
+                          color: colors.primary,
                         ),
                       ),
                     ),

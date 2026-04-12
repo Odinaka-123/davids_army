@@ -5,22 +5,27 @@ class BibleStudyPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colors.onBackground),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Bible Study",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: colors.onBackground,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 100), // 👈 ADD THIS
+        padding: const EdgeInsets.only(bottom: 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -41,45 +46,79 @@ class BibleStudyPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   /// TITLE
-                  const Text(
+                  Text(
                     "Bible Study",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: colors.onBackground,
+                    ),
                   ),
 
                   const SizedBox(height: 16),
 
                   /// DATE
                   Row(
-                    children: const [
-                      Icon(Icons.calendar_month, size: 20),
-                      SizedBox(width: 8),
-                      Text("Every Thursday", style: TextStyle(fontSize: 16)),
+                    children: [
+                      Icon(
+                        Icons.calendar_month,
+                        size: 20,
+                        color: colors.onBackground,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Every Thursday",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colors.onBackground,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
                   /// TIME
                   Row(
-                    children: const [
-                      Icon(Icons.access_time, size: 20),
-                      SizedBox(width: 8),
-                      Text("8:00 PM WAT", style: TextStyle(fontSize: 16)),
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 20,
+                        color: colors.onBackground,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "8:00 PM WAT",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colors.onBackground,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
-                  /// LOCATION / FORMAT
+                  /// LOCATION
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Icon(Icons.location_on_outlined, size: 20),
-                      SizedBox(width: 8),
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 20,
+                        color: colors.onBackground,
+                      ),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          "Live Whatsapp Call (Link will be shared in the group)",
-                          style: TextStyle(fontSize: 16),
+                          "Live WhatsApp Call (Link will be shared in the group)",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: colors.onBackground,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
@@ -87,8 +126,8 @@ class BibleStudyPage extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  /// DESCRIPTION
-                  const Text(
+                  /// DESCRIPTION (slightly softer)
+                  Text(
                     "Join us for a powerful time of studying God’s Word together. "
                     "Our Bible Study sessions are designed to help you grow deeper "
                     "in your understanding of scripture, strengthen your faith, "
@@ -100,7 +139,7 @@ class BibleStudyPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.6,
-                      color: Colors.black87,
+                      color: colors.onBackground.withOpacity(0.8),
                     ),
                   ),
 
@@ -112,20 +151,20 @@ class BibleStudyPage extends StatelessWidget {
                     height: 52,
                     child: OutlinedButton(
                       onPressed: () {
-                        // TODO: Add join link / Zoom / directions
+                        // TODO: Add join link
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.orange),
+                        side: BorderSide(color: colors.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         "JOIN SESSION",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: Colors.orange,
+                          color: colors.primary,
                         ),
                       ),
                     ),
