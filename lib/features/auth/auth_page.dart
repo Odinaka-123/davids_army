@@ -36,6 +36,18 @@ class _AuthPageState extends State<AuthPage> {
             children: [
               const SizedBox(height: 24),
 
+              // ── Logo top right ────────────────────────────────────
+              Align(
+                alignment: Alignment.topRight,
+                child: Image.asset(
+                  'assets/icons/shield_icon.png',
+                  height: 48,
+                  width: 48,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
               Text(
                 isLogin ? "Hi There! 👋" : "Register",
                 style: const TextStyle(
@@ -190,7 +202,6 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  /// 🔥 FINAL AUTH FLOW
   void _handleEmailAuth() async {
     final email = emailController.text.trim();
     final pass = passwordController.text.trim();

@@ -26,27 +26,36 @@ dependencies:
   firebase_messaging: ^15.2.10
   firebase_storage: ^12.4.10
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.13.1
-  
-  
+  flutter_native_splash: ^2.4.0
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
-    - assets/icons/
+    - assets/icons/   # ✅ FIXED (your actual folder)
 
+# 🔵 APP ICON
 flutter_launcher_icons:
   android: true
   ios: true
-
-  image_path: assets/icons/shield_icon.png
+  image_path: assets/icons/shield_icon.png   # ✅ MUST include extension
 
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: assets/icons/shield_icon.png
+
+# 🔥 SPLASH SCREEN
+flutter_native_splash:
+  color: "#FFFFFFF"
+  image: assets/icons/shield_icon.png   # ✅ your splash image
+
+  android: true
+  ios: true
+
+  android_12:
+    image: assets/icons/shield_icon.png
+    icon_background_color: "#FFFFFFF"
